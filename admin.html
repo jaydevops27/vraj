@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RSVP Admin — Dhwani &amp; Vraj</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ============ LOGIN ============ -->
+  <section class="login" id="loginView">
+    <form class="login__card" id="loginForm">
+      <h1>RSVP Admin</h1>
+      <p class="login__hint">Sign in with the admin account you created in Supabase Auth.</p>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" id="loginBtn">Sign In</button>
+      <p class="login__status" id="loginStatus" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="dashboard" id="dashboardView" hidden>
+    <header class="dashboard__header">
+      <div>
+        <h1>Wedding RSVP Dashboard</h1>
+        <p id="signedInAs"></p>
+      </div>
+      <div class="dashboard__actions">
+        <button id="exportBtn" class="btn btn--ghost">Export CSV</button>
+        <button id="signOutBtn" class="btn btn--ghost">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="table-wrap">
+      <table id="rsvpTable">
+        <thead>
+          <tr>
+            <th>Submitted</th>
+            <th>Name</th>
+            <th>Attending</th>
+            <th>Guests</th>
+            <th>Swaminarayan Food</th>
+            <th>Contact</th>
+            <th>Message / Song Request</th>
+          </tr>
+        </thead>
+        <tbody id="rsvpBody">
+          <tr><td colspan="7" class="muted">Loading responses…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
