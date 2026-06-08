@@ -777,7 +777,7 @@ function launchFireworks() {
   const FADE_IN_MS = 1500;
   const FADE_OUT_MS = 1000;
 
-  const audio = new Audio('audio/garba-night.mp3');
+  const audio = new Audio('audio/new-song.mp4');
   audio.loop = true;
   audio.preload = 'none';
   audio.volume = 0;
@@ -831,6 +831,25 @@ function launchFireworks() {
     if (isPlaying) pause();
     else play();
   });
+
+  // Browsers block sound from starting on page load with no exceptions —
+  // but the instant a guest taps, scrolls, or presses any key, that
+  // counts as "real" interaction and playback is allowed. So instead of
+  // waiting for them to find the "Music" pill, we start it on whatever
+  // they do first — landing feels musical without them lifting a finger
+  // toward the toggle. They can still pause any time with the same pill.
+  let hasAutoStarted = false;
+  const AUTO_START_EVENTS = ['pointerdown', 'touchstart', 'keydown', 'wheel'];
+
+  function autoStartOnFirstInteraction(event) {
+    if (isPlaying || hasAutoStarted) return;
+    if (event.target?.closest?.('#soundToggle')) return; // let the pill manage its own taps
+    hasAutoStarted = true;
+    AUTO_START_EVENTS.forEach((type) => window.removeEventListener(type, autoStartOnFirstInteraction));
+    play();
+  }
+
+  AUTO_START_EVENTS.forEach((type) => window.addEventListener(type, autoStartOnFirstInteraction, { passive: true }));
 
   // No fade on the way out — the page is already gone.
   window.addEventListener('pagehide', () => {
