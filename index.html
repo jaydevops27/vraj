@@ -121,6 +121,15 @@
   <!-- Drifting petals & motifs — continuous ambient motion across the whole page -->
   <div class="ambience" id="ambience" aria-hidden="true"></div>
 
+  <!-- Garba soundscape toggle — a festive dhol-and-taali rhythm over a
+       tanpura drone, woven live in the browser so no audio file ever
+       needs to load. Off by default; browsers require a tap first. -->
+  <button type="button" class="sound-toggle" id="soundToggle" aria-pressed="false" aria-label="Play a festive garba rhythm">
+    <span class="sound-toggle__ring" aria-hidden="true"></span>
+    <span class="sound-toggle__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="sound-toggle__label" id="soundToggleLabel">Music</span>
+  </button>
+
   <!-- ======================================================================
        HERO
        ====================================================================== -->
@@ -426,6 +435,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=garba2"></script>
 </body>
 </html>
