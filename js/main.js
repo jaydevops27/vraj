@@ -35,6 +35,48 @@ const VENUE_ADDRESS = '31 Melanie Dr, Brampton, ON L6T 5H8';
 const WEDDING_DATE = new Date('2026-07-19T17:00:00-04:00');
 
 /* ============================================================
+   0b. Personalized invite — reads a guest's name from the link
+   (e.g. yoursite.com/?to=Aarav+Patel) and weaves it straight
+   into the greeting, then pre-fills their RSVP name field.
+   Falls back to the generic greeting when no name is present.
+   Sets only textContent/value (never innerHTML), so a crafted
+   query string can never inject markup.
+   ============================================================ */
+(function personalizeInvite() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('to') || params.get('guest') || params.get('name');
+  if (!raw) return;
+
+  const name = raw
+    .trim()
+    .slice(0, 60)
+    .replace(/[^\p{L}\p{M}\s.'-]/gu, '')
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+  if (!name) return;
+
+  const eyebrow = document.getElementById('heroEyebrow');
+  if (eyebrow) {
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'hero__guest-name';
+    nameSpan.textContent = name;
+    eyebrow.replaceChildren(
+      document.createTextNode('— dear '),
+      nameSpan,
+      document.createTextNode(', you are joyfully invited to —'),
+    );
+  }
+
+  const guestNameField = document.getElementById('guestName');
+  if (guestNameField && !guestNameField.value) {
+    guestNameField.value = name;
+  }
+})();
+
+/* ============================================================
    1. Firecracker burst — a short, dazzling shower of sparks
       that fires the instant the curtain parts. Pure canvas
       particles (gravity + fade), in the wedding's palette.
