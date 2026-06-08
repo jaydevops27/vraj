@@ -762,211 +762,46 @@ function launchFireworks() {
 })();
 
 /* ============================================================
-   13. Garba soundscape — a festive, generative dhol-and-taali
-   rhythm over a tanpura drone, woven live with the Web Audio API.
-   No file ever needs to load (and never autoplays — browsers
-   require a tap first); the guest opts in with the floating
-   "Music" pill.
+   13. Garba soundscape — the couple's chosen track, played softly
+   on a loop through a native <audio> element. Off by default and
+   never autoplays (browsers require a tap first); the guest opts
+   in with the floating "Music" pill, and it fades in and out
+   smoothly rather than snapping on/off.
    ============================================================ */
 (function ambientSoundscape() {
   const toggle = document.getElementById('soundToggle');
   const label = document.getElementById('soundToggleLabel');
   if (!toggle) return;
 
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) { toggle.remove(); return; }
+  const TARGET_VOLUME = 0.45;
+  const FADE_IN_MS = 1500;
+  const FADE_OUT_MS = 1000;
 
-  let ctx = null;
-  let master = null;
-  let liveNodes = [];
-  let percussionTimer = null;
-  let tanpuraTimer = null;
+  const audio = new Audio('audio/garba-night.mp3');
+  audio.loop = true;
+  audio.preload = 'none';
+  audio.volume = 0;
+
   let isPlaying = false;
-  let isFadingOut = false;
+  let fadeTimer = null;
 
-  function buildGraph() {
-    ctx = new AudioCtx();
-    master = ctx.createGain();
-    master.gain.value = 0;
-    master.connect(ctx.destination);
-
-    // A warm low-pass keeps everything soft and "far away", like
-    // music drifting in from across a courtyard.
-    const warmth = ctx.createBiquadFilter();
-    warmth.type = 'lowpass';
-    warmth.frequency.value = 1100;
-    warmth.Q.value = 0.4;
-    warmth.connect(master);
-
-    // Slow filter sweep — the drone gently "breathes" rather than
-    // sitting static.
-    const sweep = ctx.createOscillator();
-    sweep.frequency.value = 0.045;
-    const sweepDepth = ctx.createGain();
-    sweepDepth.gain.value = 240;
-    sweep.connect(sweepDepth);
-    sweepDepth.connect(warmth.frequency);
-    sweep.start();
-    liveNodes.push(sweep);
-
-    // --- Tanpura layer: the cyclic plucked drone heard at the start
-    // of nearly every Indian classical, devotional or wedding
-    // gathering — instantly recognizable as "Indian ambience" in a
-    // way no synth pad can match. Built with Karplus–Strong string
-    // synthesis (a noise burst ringing through a tuned feedback
-    // delay loop) on the traditional Pa–Sa–Sa–Sa cycle.
-    const tanpuraGain = ctx.createGain();
-    tanpuraGain.gain.value = 0.32; // sits underneath as a harmonic bed — the garba beat leads
-    tanpuraGain.connect(warmth);
-
-    const SA = 110; // tonic ("Sa"), a comfortable low drone register
-    const TANPURA_CYCLE = [SA * 1.5, SA, SA, SA / 2]; // Pa, Sa, Sa, Sa (mandra/lower octave)
-    let tanpuraStep = 0;
-
-    function pluckTanpuraString(time, freq, level) {
-      const period = 1 / freq;
-      const decay = 3.4;
-      const burstLength = Math.min(0.05, period * 6);
-
-      const noiseBuffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * burstLength), ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      const burst = ctx.createBufferSource();
-      burst.buffer = noiseBuffer;
-
-      // Shapes the noise burst into a pluck-like excitation. Parameters
-      // are scheduled at the burst's start time (rather than set
-      // immediately) so the filter never has to "jump" mid-stream —
-      // which is what trips Chrome's fast-automation instability check.
-      const exciter = ctx.createBiquadFilter();
-      exciter.type = 'bandpass';
-      exciter.frequency.setValueAtTime(freq * 1.5, time);
-      exciter.Q.setValueAtTime(1.1, time);
-
-      // The resonating "string": a tuned feedback delay loop —
-      // the heart of the Karplus–Strong technique.
-      const delay = ctx.createDelay(0.05);
-      delay.delayTime.setValueAtTime(period, time);
-
-      const damping = ctx.createBiquadFilter();
-      damping.type = 'lowpass';
-      damping.frequency.setValueAtTime(freq * 7, time);
-
-      const feedback = ctx.createGain();
-      feedback.gain.setValueAtTime(Math.exp((Math.log(0.001) * period) / decay), time);
-
-      const voice = ctx.createGain();
-      voice.gain.setValueAtTime(level, time);
-
-      burst.connect(exciter);
-      exciter.connect(delay);
-      delay.connect(damping);
-      damping.connect(feedback);
-      feedback.connect(delay);
-      damping.connect(voice);
-      voice.connect(tanpuraGain);
-
-      burst.start(time);
-      burst.stop(time + burstLength);
-
-      const lifespanMs = (decay + 1.2) * 1000;
-      setTimeout(() => {
-        [burst, exciter, delay, damping, feedback, voice].forEach((node) => {
-          try { node.disconnect(); } catch { /* already gone */ }
-        });
-      }, lifespanMs);
-    }
-
-    function scheduleTanpura() {
-      if (!ctx) return;
-      const freq = TANPURA_CYCLE[tanpuraStep % TANPURA_CYCLE.length];
-      const level = tanpuraStep % TANPURA_CYCLE.length === 0 ? 0.5 : 0.34;
-      pluckTanpuraString(ctx.currentTime + 0.04, freq, level);
-      tanpuraStep += 1;
-      tanpuraTimer = setTimeout(scheduleTanpura, 2050);
-    }
-    scheduleTanpura();
-
-    // --- Garba rhythm layer: the lively, danceable dhol-and-taali
-    // cycle that drives every Gujarati garba/raas — the sound this
-    // couple would actually hear circling the stage on their big
-    // night. A repeating 8-beat pattern of low/high dhol strokes
-    // answered by hand-claps, scheduled ahead for tight, steady timing.
-    const GARBA_TEMPO = 128; // BPM — festive and danceable, not frantic
-    const beatSeconds = 60 / GARBA_TEMPO;
-    // D = low dhol stroke · d = high dhol stroke · c = taali (clap) · . = rest
-    const GARBA_PATTERN = ['D', '.', 'd', 'c', 'D', 'd', '.', 'c'];
-    let garbaStep = 0;
-
-    function dholStroke(time, low, level) {
-      const osc = ctx.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(low ? 108 : 196, time);
-      osc.frequency.exponentialRampToValueAtTime(low ? 56 : 104, time + 0.15);
-
-      const env = ctx.createGain();
-      env.gain.setValueAtTime(0.0001, time);
-      env.gain.linearRampToValueAtTime(level, time + 0.008);
-      env.gain.exponentialRampToValueAtTime(0.0001, time + (low ? 0.34 : 0.22));
-
-      osc.connect(env);
-      env.connect(warmth);
-      osc.start(time);
-      osc.stop(time + 0.4);
-    }
-
-    function taaliClap(time) {
-      const burstLength = 0.07;
-      const noiseBuffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * burstLength), ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
-      const burst = ctx.createBufferSource();
-      burst.buffer = noiseBuffer;
-
-      const tone = ctx.createBiquadFilter();
-      tone.type = 'bandpass';
-      tone.frequency.setValueAtTime(1500, time);
-      tone.Q.setValueAtTime(1.1, time);
-
-      const env = ctx.createGain();
-      env.gain.setValueAtTime(0.0001, time);
-      env.gain.linearRampToValueAtTime(0.22, time + 0.004);
-      env.gain.exponentialRampToValueAtTime(0.0001, time + 0.13);
-
-      burst.connect(tone);
-      tone.connect(env);
-      env.connect(warmth);
-      burst.start(time);
-      burst.stop(time + burstLength);
-    }
-
-    function scheduleGarba() {
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      const beat = GARBA_PATTERN[garbaStep % GARBA_PATTERN.length];
-      const at = now + 0.04;
-      if (beat === 'D') dholStroke(at, true, 0.4);
-      else if (beat === 'd') dholStroke(at, false, 0.26);
-      else if (beat === 'c') taaliClap(at);
-      garbaStep += 1;
-      percussionTimer = setTimeout(scheduleGarba, beatSeconds * 1000);
-    }
-    scheduleGarba();
-  }
-
-  function teardownGraph() {
-    if (percussionTimer) clearTimeout(percussionTimer);
-    if (tanpuraTimer) clearTimeout(tanpuraTimer);
-    percussionTimer = null;
-    tanpuraTimer = null;
-    liveNodes.forEach((node) => { try { node.stop(); } catch { /* already stopped */ } });
-    liveNodes = [];
-    if (ctx) {
-      const closing = ctx;
-      ctx = null;
-      master = null;
-      closing.close().catch(() => { /* already closing */ });
-    }
+  function fadeVolumeTo(target, durationMs) {
+    if (fadeTimer) clearInterval(fadeTimer);
+    const steps = 30;
+    const stepMs = durationMs / steps;
+    const start = audio.volume;
+    const stepAmount = (target - start) / steps;
+    let count = 0;
+    fadeTimer = setInterval(() => {
+      count += 1;
+      audio.volume = Math.min(1, Math.max(0, start + stepAmount * count));
+      if (count >= steps) {
+        clearInterval(fadeTimer);
+        fadeTimer = null;
+        audio.volume = target;
+        if (target === 0) audio.pause();
+      }
+    }, stepMs);
   }
 
   function setPlayingUI(playing) {
@@ -976,40 +811,32 @@ function launchFireworks() {
   }
 
   function play() {
-    if (!ctx) buildGraph();
-    ctx.resume();
-    isFadingOut = false;
-    const now = ctx.currentTime;
-    master.gain.cancelScheduledValues(now);
-    master.gain.setValueAtTime(master.gain.value, now);
-    master.gain.linearRampToValueAtTime(0.5, now + 1.8);
-    isPlaying = true;
-    setPlayingUI(true);
-    vibrate(8);
+    audio.play()
+      .then(() => {
+        isPlaying = true;
+        setPlayingUI(true);
+        fadeVolumeTo(TARGET_VOLUME, FADE_IN_MS);
+        vibrate(8);
+      })
+      .catch((err) => console.error('Could not start the garba track:', err));
   }
 
   function pause() {
-    if (!ctx || isFadingOut) return;
-    isFadingOut = true;
-    const now = ctx.currentTime;
-    master.gain.cancelScheduledValues(now);
-    master.gain.setValueAtTime(master.gain.value, now);
-    master.gain.linearRampToValueAtTime(0, now + 1.1);
     isPlaying = false;
     setPlayingUI(false);
-    setTimeout(() => {
-      if (!isPlaying) teardownGraph();
-      isFadingOut = false;
-    }, 1300);
+    fadeVolumeTo(0, FADE_OUT_MS);
   }
 
   toggle.addEventListener('click', () => {
-    if (isPlaying || isFadingOut) pause();
+    if (isPlaying) pause();
     else play();
   });
 
-  // Leave no audio context dangling if the guest wanders off mid-fade.
-  window.addEventListener('pagehide', teardownGraph);
+  // No fade on the way out — the page is already gone.
+  window.addEventListener('pagehide', () => {
+    if (fadeTimer) clearInterval(fadeTimer);
+    audio.pause();
+  });
 })();
 
 /* ============================================================
