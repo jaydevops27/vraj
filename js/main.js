@@ -1,9 +1,8 @@
 /* ============================================================
    0. Supabase client — loaded lazily from a CDN.
-   Wrapped so that if the import fails (offline, CDN blocked,
-   placeholder credentials, etc.) the rest of the page — countdown,
-   animations, form UI — keeps working; only the backend-dependent
-   bits (submitting an RSVP, the live lantern wall) degrade gracefully.
+   Wrapped so a failed import (offline, CDN blocked, placeholder
+   credentials) never breaks the core experience — only the
+   backend-dependent bits (RSVP submit, live lantern wall) degrade.
    ============================================================ */
 let supabasePromise = null;
 function getSupabase() {
@@ -23,561 +22,710 @@ function getSupabase() {
 }
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const html = document.documentElement;
+
+function vibrate(pattern) {
+  if (navigator.vibrate) {
+    try { navigator.vibrate(pattern); } catch { /* no-op */ }
+  }
+}
+
+const VENUE_NAME = 'Royal India Banquets';
+const VENUE_ADDRESS = '31 Melanie Dr, Brampton, ON L6T 5H8';
+const WEDDING_DATE = new Date('2026-07-19T17:00:00-04:00');
 
 /* ============================================================
-   1. Opening sequence — marigold "toran" curtains part, then
-   the couple's names resolve into focus like ink settling.
+   1. Firecracker burst — a short, dazzling shower of sparks
+      that fires the instant the curtain parts. Pure canvas
+      particles (gravity + fade), in the wedding's palette.
    ============================================================ */
-(function openingSequence() {
-  const curtain = document.getElementById('curtain');
-  const inkEls = Array.from(document.querySelectorAll('.ink-reveal[data-stagger]'));
+function launchFireworks() {
+  const canvas = document.getElementById('fireworks');
+  if (!canvas) return;
+  if (prefersReducedMotion) { canvas.remove(); return; }
 
-  function revealNames() {
-    inkEls.forEach((el) => {
-      const idx = parseInt(el.dataset.stagger, 10) || 0;
-      setTimeout(() => el.classList.add('is-visible'), idx * 240);
-    });
+  const ctx = canvas.getContext('2d');
+  const colors = ['#d8a13a', '#f0962f', '#c2415a', '#f0d9ad', '#0e6e6e', '#fffaf2'];
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let width = 0, height = 0;
+  let particles = [];
+  let running = true;
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function burst(x, y, count) {
+    const lead = colors[Math.floor(Math.random() * colors.length)];
+    for (let i = 0; i < count; i += 1) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.35;
+      const speed = 2.2 + Math.random() * 3.6;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.011 + Math.random() * 0.013,
+        color: Math.random() < 0.65 ? lead : colors[Math.floor(Math.random() * colors.length)],
+        size: 1.5 + Math.random() * 2,
+        trail: [],
+      });
+    }
   }
 
-  if (!curtain || prefersReducedMotion) {
-    if (curtain) curtain.classList.add('is-hidden');
-    revealNames();
+  function tick() {
+    if (!running) return;
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach((p) => {
+      p.trail.push({ x: p.x, y: p.y });
+      if (p.trail.length > 4) p.trail.shift();
+      p.vy += 0.05;
+      p.vx *= 0.992;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= p.decay;
+
+      ctx.globalAlpha = Math.max(p.life, 0) * 0.5;
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = p.size * 0.7;
+      ctx.beginPath();
+      p.trail.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    particles = particles.filter((p) => p.life > 0 && p.y < height + 40);
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  const launches = [
+    { x: () => width * 0.26, y: () => height * 0.28, count: 50, delay: 0 },
+    { x: () => width * 0.74, y: () => height * 0.22, count: 50, delay: 240 },
+    { x: () => width * 0.5, y: () => height * 0.36, count: 64, delay: 480 },
+    { x: () => width * 0.36, y: () => height * 0.18, count: 38, delay: 760 },
+  ];
+  launches.forEach(({ x, y, count, delay }) => {
+    setTimeout(() => {
+      burst(x(), y(), count);
+      vibrate(16);
+    }, delay);
+  });
+
+  setTimeout(() => canvas.classList.add('is-done'), 2500);
+  setTimeout(() => {
+    running = false;
+    window.removeEventListener('resize', resize);
+    canvas.remove();
+  }, 3700);
+}
+
+/* ============================================================
+   2. Curtain — a brief opening flourish that parts to reveal
+      the hero (and sets off the firecracker burst), then
+      steps fully out of the way.
+   ============================================================ */
+(function curtainSequence() {
+  const curtain = document.getElementById('curtain');
+  if (!curtain) return;
+
+  if (prefersReducedMotion) {
+    html.classList.add('curtain-gone');
+    document.getElementById('fireworks')?.remove();
     return;
   }
 
-  // Let the page settle for a beat, then part the curtains
-  setTimeout(() => curtain.classList.add('is-open'), 550);
-  setTimeout(() => {
-    curtain.classList.add('is-hidden');
-    revealNames();
-  }, 1850);
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      html.classList.add('curtain-open');
+      vibrate(12);
+      launchFireworks();
+    }, 420);
+    setTimeout(() => {
+      html.classList.add('curtain-gone');
+    }, 1700);
+  });
 })();
 
 /* ============================================================
-   2. Generative rangoli mandala — drawn live with concentric
-   rings of hand-placed petals using polar geometry, then
-   "inked on" with an animated stroke-draw reveal.
+   3. Generative rangoli — builds a unique concentric mandala
+      out of rings + petal clusters behind the hero names.
    ============================================================ */
 (function buildRangoli() {
   const svg = document.getElementById('rangoli');
   if (!svg) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const cx = 300;
-  const cy = 300;
+  const cx = 300, cy = 300;
+  const ringRadii = [70, 120, 175, 235, 285];
 
-  const rings = [
-    { radius: 60, count: 8, len: 42, width: 15, rotate: 0 },
-    { radius: 116, count: 12, len: 56, width: 19, rotate: 15 },
-    { radius: 176, count: 16, len: 62, width: 21, rotate: 0 },
-    { radius: 238, count: 22, len: 50, width: 16, rotate: 8 },
+  ringRadii.forEach((r) => {
+    const circle = document.createElementNS(NS, 'circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    svg.appendChild(circle);
+  });
+
+  ringRadii.slice(1).forEach((r, ringIndex) => {
+    const count = 8 + ringIndex * 4;
+    for (let i = 0; i < count; i += 1) {
+      const angle = (i / count) * Math.PI * 2;
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+      const size = 9 - ringIndex;
+      if (i % 2 === 0) {
+        const petal = document.createElementNS(NS, 'path');
+        const dx = Math.cos(angle) * size * 1.6;
+        const dy = Math.sin(angle) * size * 1.6;
+        petal.setAttribute(
+          'd',
+          `M ${x - dy} ${y + dx} C ${x + size * 2} ${y + size * 2} ${x + size * 2} ${y - size * 2} ${x + dy} ${y - dx} Z`
+        );
+        petal.setAttribute('class', 'rangoli-petal');
+        svg.appendChild(petal);
+      } else {
+        const dot = document.createElementNS(NS, 'circle');
+        dot.setAttribute('cx', x);
+        dot.setAttribute('cy', y);
+        dot.setAttribute('r', size / 2.4);
+        dot.setAttribute('class', 'rangoli-petal');
+        svg.appendChild(dot);
+      }
+    }
+  });
+})();
+
+/* ============================================================
+   4. Ambience — a continuous slow drift of paisleys, peacock
+      feathers, marigolds and petals across the whole page.
+   ============================================================ */
+(function seedAmbience() {
+  const field = document.getElementById('ambience');
+  if (!field || prefersReducedMotion) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const motifs = [
+    { symbol: '#motif-paisley', cls: 'ambience__item--paisley', w: 30, h: 45 },
+    { symbol: '#motif-feather', cls: 'ambience__item--feather', w: 22, h: 60 },
+    { symbol: '#motif-marigold', cls: 'ambience__item--marigold', w: 26, h: 26 },
   ];
+  const COUNT = 16;
 
-  const drawables = [];
-
-  function petalPath(len, width) {
-    const half = width / 2;
-    return `M0,0 C ${-half},${(-len * 0.55).toFixed(1)} ${(-half * 0.6).toFixed(1)},${-len} 0,${-len} ` +
-           `C ${(half * 0.6).toFixed(1)},${-len} ${half},${(-len * 0.55).toFixed(1)} 0,0 Z`;
-  }
-
-  rings.forEach((ring) => {
-    for (let i = 0; i < ring.count; i++) {
-      const angle = (360 / ring.count) * i + ring.rotate;
-      const rad = (angle * Math.PI) / 180;
-      const x = cx + ring.radius * Math.cos(rad);
-      const y = cy + ring.radius * Math.sin(rad);
-
-      const path = document.createElementNS(NS, 'path');
-      path.setAttribute('d', petalPath(ring.len, ring.width));
-      path.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${(angle + 90).toFixed(1)})`);
-      path.setAttribute('class', 'rangoli__petal');
-      svg.appendChild(path);
-      drawables.push({ el: path, kind: 'path' });
-    }
-
-    const ring2 = document.createElementNS(NS, 'circle');
-    ring2.setAttribute('cx', cx);
-    ring2.setAttribute('cy', cy);
-    ring2.setAttribute('r', Math.max(20, ring.radius - ring.len * 0.2));
-    ring2.setAttribute('class', 'rangoli__ring');
-    svg.appendChild(ring2);
-    drawables.push({ el: ring2, kind: 'fade' });
-  });
-
-  for (let i = 0; i < 8; i++) {
-    const angle = 45 * i;
-    const rad = (angle * Math.PI) / 180;
-    const dot = document.createElementNS(NS, 'circle');
-    dot.setAttribute('cx', (cx + 26 * Math.cos(rad)).toFixed(1));
-    dot.setAttribute('cy', (cy + 26 * Math.sin(rad)).toFixed(1));
-    dot.setAttribute('r', 5.5);
-    dot.setAttribute('class', 'rangoli__dot');
-    svg.appendChild(dot);
-    drawables.push({ el: dot, kind: 'fade' });
-  }
-
-  if (prefersReducedMotion) return; // leave fully drawn, skip the animated reveal
-
-  drawables.forEach(({ el, kind }, i) => {
-    const delay = (i % 46) * 28;
-    if (kind === 'path') {
-      const length = el.getTotalLength();
-      el.style.strokeDasharray = String(length);
-      el.style.strokeDashoffset = String(length);
-      el.style.opacity = '0';
-      el.style.transition = `stroke-dashoffset 1.5s ease ${delay}ms, opacity 0.6s ease ${delay}ms`;
-      requestAnimationFrame(() => {
-        el.style.strokeDashoffset = '0';
-        el.style.opacity = '1';
-      });
+  for (let i = 0; i < COUNT; i += 1) {
+    const useEmoji = i % 4 === 3;
+    let el;
+    if (useEmoji) {
+      el = document.createElement('span');
+      el.className = 'ambience__item ambience__item--petal';
+      el.style.width = '10px';
+      el.style.height = '10px';
     } else {
-      el.style.opacity = '0';
-      el.style.transition = `opacity 1.3s ease ${delay}ms`;
-      requestAnimationFrame(() => { el.style.opacity = '1'; });
+      const m = motifs[i % motifs.length];
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 100 150');
+      svg.setAttribute('width', m.w);
+      svg.setAttribute('height', m.h);
+      svg.setAttribute('aria-hidden', 'true');
+      const use = document.createElementNS(NS, 'use');
+      use.setAttribute('href', m.symbol);
+      svg.appendChild(use);
+      svg.classList.add('ambience__item', m.cls);
+      el = svg;
     }
+    const left = Math.random() * 100;
+    const duration = 26 + Math.random() * 30;
+    const delay = -(Math.random() * duration);
+    const driftX = (Math.random() - 0.5) * 220;
+    const driftRot = 120 + Math.random() * 240;
+    const opacity = 0.25 + Math.random() * 0.4;
+
+    el.style.left = `${left}%`;
+    el.style.setProperty('--drift-x', `${driftX}px`);
+    el.style.setProperty('--drift-rot', `${driftRot}deg`);
+    el.style.setProperty('--drift-opacity', opacity.toFixed(2));
+    el.style.animationDuration = `${duration}s, ${duration}s`;
+    el.style.animationDelay = `${delay}s, ${delay}s`;
+    field.appendChild(el);
+  }
+})();
+
+/* ============================================================
+   5. Hero scroll cue — nudge the page toward the story.
+   ============================================================ */
+(function scrollCue() {
+  const cue = document.getElementById('scrollCue');
+  if (!cue) return;
+  cue.addEventListener('click', () => {
+    document.getElementById('story')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 })();
 
 /* ============================================================
-   3. Floating petals (decorative background)
-   ============================================================ */
-(function petals() {
-  const field = document.getElementById('petalField');
-  if (!field) return;
-  const glyphs = ['🌸', '🌺', '🌼', '🪷'];
-  const COUNT = window.matchMedia('(max-width: 640px)').matches ? 8 : 15;
-
-  for (let i = 0; i < COUNT; i++) {
-    const petal = document.createElement('span');
-    petal.className = 'petal';
-    petal.textContent = glyphs[i % glyphs.length];
-    petal.style.left = `${Math.random() * 100}%`;
-    petal.style.fontSize = `${1 + Math.random() * 1.4}rem`;
-    petal.style.setProperty('--drift', `${(Math.random() - 0.5) * 160}px`);
-    petal.style.animationDuration = `${14 + Math.random() * 16}s`;
-    petal.style.animationDelay = `-${Math.random() * 25}s`;
-    field.appendChild(petal);
-  }
-})();
-
-/* ============================================================
-   4. Reveal-on-scroll for content blocks
-   ============================================================ */
-(function revealOnScroll() {
-  const items = document.querySelectorAll('.reveal');
-  if (!items.length) return;
-  if (!('IntersectionObserver' in window)) {
-    items.forEach((el) => el.classList.add('is-visible'));
-    return;
-  }
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-  );
-  items.forEach((el) => observer.observe(el));
-})();
-
-/* ============================================================
-   5. The Day Journey — the backdrop drifts from dawn light,
-   through daylight & a golden-hour glow, into a starlit night,
-   smoothly cross-fading as the visitor scrolls past each
-   chapter (mapped via each section's [data-scene] attribute).
-   ============================================================ */
-(function dayJourney() {
-  const root = document.documentElement;
-  const sceneEls = Array.from(document.querySelectorAll('[data-scene]'));
-  if (!sceneEls.length) return;
-
-  const SCENES = {
-    dawn:     { top: [253, 242, 220], mid: [251, 224, 192], bottom: [246, 207, 158], stars: 0 },
-    daylight: { top: [255, 248, 236], mid: [255, 233, 207], bottom: [243, 201, 168], stars: 0 },
-    golden:   { top: [246, 193, 120], mid: [233, 140, 106], bottom: [182, 83, 106], stars: 0.18 },
-    night:    { top: [90, 24, 38],    mid: [56, 16, 28],    bottom: [26, 13, 24],   stars: 1 },
-  };
-
-  const current = {
-    top: [...SCENES.dawn.top],
-    mid: [...SCENES.dawn.mid],
-    bottom: [...SCENES.dawn.bottom],
-    stars: 0,
-  };
-
-  function lerp(a, b, t) { return a + (b - a) * t; }
-  function lerpColor(a, b, t) { return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)]; }
-  function rgb(c) { return `rgb(${c[0] | 0}, ${c[1] | 0}, ${c[2] | 0})`; }
-
-  function activeScene() {
-    const viewportCenter = window.innerHeight * 0.45;
-    let closest = sceneEls[0];
-    let closestDist = Infinity;
-    for (const el of sceneEls) {
-      const rect = el.getBoundingClientRect();
-      const dist = Math.abs((rect.top + rect.height / 2) - viewportCenter);
-      if (dist < closestDist) { closestDist = dist; closest = el; }
-    }
-    return SCENES[closest.dataset.scene] || SCENES.dawn;
-  }
-
-  const factor = prefersReducedMotion ? 1 : 0.05;
-
-  function tick() {
-    const target = activeScene();
-    current.top = lerpColor(current.top, target.top, factor);
-    current.mid = lerpColor(current.mid, target.mid, factor);
-    current.bottom = lerpColor(current.bottom, target.bottom, factor);
-    current.stars = lerp(current.stars, target.stars, factor);
-
-    root.style.setProperty('--j-top', rgb(current.top));
-    root.style.setProperty('--j-mid', rgb(current.mid));
-    root.style.setProperty('--j-bottom', rgb(current.bottom));
-    root.style.setProperty('--stars-opacity', current.stars.toFixed(3));
-
-    requestAnimationFrame(tick);
-  }
-  tick();
-
-  // Generate a starfield once — its container's opacity is tied to --stars-opacity
-  const starField = document.getElementById('journeyStars');
-  if (starField) {
-    const STAR_COUNT = window.matchMedia('(max-width: 640px)').matches ? 35 : 70;
-    for (let i = 0; i < STAR_COUNT; i++) {
-      const star = document.createElement('span');
-      star.className = 'star';
-      star.style.left = `${Math.random() * 100}%`;
-      star.style.top = `${Math.random() * 70}%`;
-      star.style.animationDelay = `-${Math.random() * 4}s`;
-      star.style.animationDuration = `${3 + Math.random() * 4}s`;
-      starField.appendChild(star);
-    }
-  }
-})();
-
-/* ============================================================
-   6. Parallax ornaments — decorative motifs drift at their own
-   pace as you scroll, adding a sense of depth to each chapter.
-   ============================================================ */
-(function parallax() {
-  const els = Array.from(document.querySelectorAll('.parallax-motif'));
-  if (!els.length || prefersReducedMotion) return;
-
-  let ticking = false;
-  function update() {
-    const scrollY = window.scrollY;
-    els.forEach((el) => {
-      const depth = parseFloat(el.dataset.depth || '0.1');
-      el.style.transform = `translateY(${(scrollY * depth * -1).toFixed(1)}px)`;
-    });
-    ticking = false;
-  }
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-  update();
-})();
-
-/* ============================================================
-   7. Magnetic, jewel-like cards — they tilt toward the cursor
-   and catch a soft sheen of light, like candlelight on glass.
-   ============================================================ */
-(function magneticCards() {
-  if (prefersReducedMotion) return;
-  document.querySelectorAll('[data-tilt]').forEach((card) => {
-    card.addEventListener('mousemove', (event) => {
-      const rect = card.getBoundingClientRect();
-      const px = (event.clientX - rect.left) / rect.width;
-      const py = (event.clientY - rect.top) / rect.height;
-      card.style.setProperty('--rx', `${((0.5 - py) * 12).toFixed(2)}deg`);
-      card.style.setProperty('--ry', `${((px - 0.5) * 14).toFixed(2)}deg`);
-      card.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
-      card.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
-    });
-    card.addEventListener('mouseleave', () => {
-      card.style.setProperty('--rx', '0deg');
-      card.style.setProperty('--ry', '0deg');
-      card.style.setProperty('--mx', '50%');
-      card.style.setProperty('--my', '50%');
-    });
-  });
-})();
-
-/* ============================================================
-   8. Countdown to the big day
-   Wedding: 19 July 2026, 5:00 PM (America/Toronto, EDT = UTC-04:00)
+   6. Countdown — live ticking units in the hero.
    ============================================================ */
 (function countdown() {
-  const WEDDING_DATE = new Date('2026-07-19T17:00:00-04:00').getTime();
-  const els = {
-    days: document.getElementById('cd-days'),
-    hours: document.getElementById('cd-hours'),
-    mins: document.getElementById('cd-mins'),
-    secs: document.getElementById('cd-secs'),
-  };
-  if (!els.days) return;
+  const days = document.getElementById('cd-days');
+  const hours = document.getElementById('cd-hours');
+  const mins = document.getElementById('cd-mins');
+  const secs = document.getElementById('cd-secs');
+  if (!days || !hours || !mins || !secs) return;
+
+  function pad(n) { return String(Math.max(0, n)).padStart(2, '0'); }
 
   function tick() {
-    const diff = WEDDING_DATE - Date.now();
-    const pad = (n) => String(Math.max(n, 0)).padStart(2, '0');
+    const diff = WEDDING_DATE.getTime() - Date.now();
     if (diff <= 0) {
-      els.days.textContent = els.hours.textContent = els.mins.textContent = els.secs.textContent = '00';
+      days.textContent = hours.textContent = mins.textContent = secs.textContent = '00';
       return;
     }
-    const totalSeconds = Math.floor(diff / 1000);
-    els.days.textContent = pad(Math.floor(totalSeconds / 86400));
-    els.hours.textContent = pad(Math.floor((totalSeconds % 86400) / 3600));
-    els.mins.textContent = pad(Math.floor((totalSeconds % 3600) / 60));
-    els.secs.textContent = pad(totalSeconds % 60);
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    days.textContent = pad(d);
+    hours.textContent = pad(h);
+    mins.textContent = pad(m);
+    secs.textContent = pad(s);
   }
+
   tick();
   setInterval(tick, 1000);
 })();
 
 /* ============================================================
-   9. RSVP form behaviour
+   7. Scroll reveal — IntersectionObserver toggles `.is-visible`
+      on every `.reveal` and `[data-vignette]` element so CSS
+      can choreograph the illustrated story as it scrolls in.
    ============================================================ */
-const form = document.getElementById('rsvpForm');
-const attendingFields = document.getElementById('attendingFields');
-const guestCountSelect = document.getElementById('guestCount');
-const guestCountSpecify = document.getElementById('guestCountSpecify');
-const foodCountSelect = document.getElementById('foodCount');
-const foodCountSpecify = document.getElementById('foodCountSpecify');
-const submitBtn = document.getElementById('submitBtn');
-const formStatus = document.getElementById('formStatus');
+(function scrollReveal() {
+  const targets = document.querySelectorAll('.reveal, [data-vignette]');
+  if (!targets.length) return;
 
-const successOverlay = document.getElementById('successOverlay');
-const successName = document.getElementById('successName');
-const successMessage = document.getElementById('successMessage');
-document.getElementById('successClose')?.addEventListener('click', () => {
-  successOverlay.hidden = true;
-});
-
-form?.querySelectorAll('input[name="attending"]').forEach((radio) => {
-  radio.addEventListener('change', () => {
-    const isAttending = radio.value === 'yes' && radio.checked;
-    attendingFields.hidden = !isAttending;
-    guestCountSelect.required = isAttending;
-    foodCountSelect.required = isAttending;
-    if (!isAttending) {
-      guestCountSelect.value = '';
-      foodCountSelect.value = '';
-      guestCountSpecify.hidden = true;
-      foodCountSpecify.hidden = true;
-      guestCountSpecify.value = '';
-      foodCountSpecify.value = '';
-    }
-  });
-});
-
-function wireSpecifyInput(select, specifyInput) {
-  select.addEventListener('change', () => {
-    const needsSpecify = select.value === 'more';
-    specifyInput.hidden = !needsSpecify;
-    specifyInput.required = needsSpecify;
-    if (!needsSpecify) specifyInput.value = '';
-  });
-}
-if (guestCountSelect) wireSpecifyInput(guestCountSelect, guestCountSpecify);
-if (foodCountSelect) wireSpecifyInput(foodCountSelect, foodCountSpecify);
-
-function setStatus(message, state) {
-  formStatus.textContent = message;
-  formStatus.dataset.state = state || '';
-}
-
-function numericFromSelect(select, specifyInput) {
-  if (select.value === 'more') {
-    const parsed = parseInt(specifyInput.value, 10);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  const parsed = parseInt(select.value, 10);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-form?.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  setStatus('', '');
-
-  if (!form.checkValidity()) {
-    form.reportValidity();
+  if (!('IntersectionObserver' in window) || prefersReducedMotion) {
+    targets.forEach((el) => el.classList.add('is-visible'));
     return;
   }
 
-  const attending = form.querySelector('input[name="attending"]:checked')?.value === 'yes';
-  const guestName = document.getElementById('guestName').value.trim();
-  const contactNumber = document.getElementById('contactNumber').value.trim();
-  const message = document.getElementById('message').value.trim();
-
-  const payload = {
-    guest_name: guestName,
-    attending,
-    contact_number: contactNumber,
-    message: message || null,
-    guest_count: attending ? numericFromSelect(guestCountSelect, guestCountSpecify) : null,
-    guest_count_note: attending && guestCountSelect.value === 'more' ? guestCountSpecify.value.trim() : null,
-    food_preference_count: attending ? numericFromSelect(foodCountSelect, foodCountSpecify) : null,
-    food_preference_note: attending && foodCountSelect.value === 'more' ? foodCountSpecify.value.trim() : null,
-  };
-
-  submitBtn.disabled = true;
-  submitBtn.classList.add('is-loading');
-  setStatus('Lighting your lantern…', '');
-
-  try {
-    const supabase = await getSupabase();
-    if (!supabase) throw new Error('Backend is not configured yet');
-
-    const { error } = await supabase.from('rsvps').insert(payload);
-    if (error) throw error;
-
-    form.reset();
-    attendingFields.hidden = true;
-    guestCountSpecify.hidden = true;
-    foodCountSpecify.hidden = true;
-
-    setStatus('Thank you! Your RSVP has been received. 🪔', 'success');
-    showSuccess(guestName, attending);
-    fireConfetti();
-  } catch (err) {
-    console.error('RSVP submission failed:', err);
-    setStatus('Something went wrong sending your RSVP — please try again, or message us directly.', 'error');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.classList.remove('is-loading');
-  }
-});
-
-function showSuccess(name, attending) {
-  successName.textContent = name || 'friend';
-  successMessage.textContent = attending
-    ? "Your lantern now glows on our Wall of Wishes. We can't wait to celebrate with you! 🪔"
-    : "Your lantern now glows on our Wall of Wishes. We'll miss you, but thank you for letting us know — sending love your way!";
-  successOverlay.hidden = false;
-}
-
-/* Lightweight confetti burst — petals & sparks, no external library */
-function fireConfetti() {
-  const glyphs = ['🪔', '🌸', '✨', '🌼', '💛'];
-  const layer = document.createElement('div');
-  layer.style.position = 'fixed';
-  layer.style.inset = '0';
-  layer.style.pointerEvents = 'none';
-  layer.style.zIndex = '60';
-  document.body.appendChild(layer);
-
-  for (let i = 0; i < 26; i++) {
-    const piece = document.createElement('span');
-    piece.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-    piece.style.position = 'absolute';
-    piece.style.left = `${50 + (Math.random() - 0.5) * 50}%`;
-    piece.style.top = '40%';
-    piece.style.fontSize = `${1 + Math.random() * 1.2}rem`;
-    piece.style.opacity = '0';
-    piece.style.transition = `transform ${1.1 + Math.random() * 0.9}s cubic-bezier(.21,.9,.4,1), opacity 0.4s ease`;
-    layer.appendChild(piece);
-
-    requestAnimationFrame(() => {
-      const x = (Math.random() - 0.5) * 480;
-      const y = -(120 + Math.random() * 280);
-      const rot = (Math.random() - 0.5) * 540;
-      piece.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
-      piece.style.opacity = '1';
-      setTimeout(() => { piece.style.opacity = '0'; }, 900);
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
     });
-  }
-  setTimeout(() => layer.remove(), 2400);
-}
+  }, { threshold: 0.28, rootMargin: '0px 0px -8% 0px' });
+
+  targets.forEach((el) => observer.observe(el));
+})();
 
 /* ============================================================
-   10. Live Lantern Wall — public, privacy-safe RSVP feed.
-   Reads only from the `lantern_wall` table, which exposes
-   nothing but a guest's first name + whether they're attending.
+   8. Flip cards — tap to flip, with a haptic tick; native
+      action buttons on the back faces wired to real behaviour.
    ============================================================ */
-const lanternSky = document.getElementById('lanternSky');
-const lanternCount = document.getElementById('lanternCount');
-const seenLanternIds = new Set();
-let bobDelayCounter = 0;
+(function flipCards() {
+  const cards = document.querySelectorAll('.flip-card');
+  cards.forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('[data-jump], #addToCalendarBtn, #directionsBtn')) return;
+      const expanded = card.getAttribute('aria-expanded') === 'true';
+      card.setAttribute('aria-expanded', String(!expanded));
+      vibrate(expanded ? 8 : [10, 30, 10]);
+    });
+  });
 
-function firstName(fullName) {
-  return (fullName || 'A guest').trim().split(/\s+/)[0];
-}
+  document.querySelectorAll('[data-jump]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const target = document.querySelector(btn.dataset.jump);
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+})();
 
-function renderLantern(row, { animate } = { animate: false }) {
-  if (!lanternSky || seenLanternIds.has(row.id)) return;
-  seenLanternIds.add(row.id);
+/* ============================================================
+   9. Add to calendar — generates a downloadable .ics file.
+   ============================================================ */
+(function addToCalendar() {
+  const btn = document.getElementById('addToCalendarBtn');
+  if (!btn) return;
+  btn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const ics = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Dhwani and Vraj//Wedding//EN', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT', 'UID:dhwani-vraj-wedding-19july2026@invite',
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+      'DTSTART:20260719T210000Z', 'DTEND:20260720T030000Z',
+      'SUMMARY:Dhwani \\& Vraj\\\'s Wedding',
+      `DESCRIPTION:Join us as we celebrate the wedding of Dhwani \\& Vraj at ${VENUE_NAME}\\, ${VENUE_ADDRESS}. Doors open 5:00 PM.`,
+      `LOCATION:${VENUE_NAME}\\, ${VENUE_ADDRESS}`,
+      'END:VEVENT', 'END:VCALENDAR',
+    ].join('\r\n');
 
-  const empty = lanternSky.querySelector('.lantern-sky__empty');
-  if (empty) empty.remove();
+    const blob = new Blob([ics], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dhwani-and-vraj-wedding.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    vibrate([10, 40, 10]);
+  });
+})();
 
-  const lantern = document.createElement('div');
-  lantern.className = `lantern${row.attending ? '' : ' lantern--declined'}`;
-  lantern.style.setProperty('--bob-delay', `${(bobDelayCounter++ % 8) * -0.7}s`);
-  if (!animate) lantern.style.animationName = 'lantern-bob';
+/* ============================================================
+   10. Directions — opens the venue in the guest's maps app.
+   ============================================================ */
+(function directions() {
+  const btn = document.getElementById('directionsBtn');
+  if (!btn) return;
+  btn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const destination = encodeURIComponent(`${VENUE_NAME}, ${VENUE_ADDRESS}`);
+    const isAppleDevice = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
+    const url = isAppleDevice
+      ? `https://maps.apple.com/?daddr=${destination}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+    window.open(url, '_blank', 'noopener');
+    vibrate(10);
+  });
+})();
 
-  lantern.innerHTML = `
-    <span class="lantern__glow" aria-hidden="true"></span>
-    <span class="lantern__name">${escapeHtml(firstName(row.guest_name))}</span>
-    <span class="lantern__status" aria-hidden="true">${row.attending ? '💛' : '🌙'}</span>
-  `;
-  lanternSky.appendChild(lantern);
-  lanternCount.textContent = String(seenLanternIds.size);
-}
+/* ============================================================
+   11. RSVP form — progressive disclosure, reactive lamp that
+       brightens as required fields are completed, Supabase
+       submission, success overlay + confetti.
+   ============================================================ */
+(function rsvpForm() {
+  const form = document.getElementById('rsvpForm');
+  if (!form) return;
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
+  const nameInput = document.getElementById('guestName');
+  const attendingRadios = form.querySelectorAll('input[name="attending"]');
+  const attendingFields = document.getElementById('attendingFields');
+  const guestCount = document.getElementById('guestCount');
+  const guestCountSpecify = document.getElementById('guestCountSpecify');
+  const foodCount = document.getElementById('foodCount');
+  const foodCountSpecify = document.getElementById('foodCountSpecify');
+  const contactNumber = document.getElementById('contactNumber');
+  const message = document.getElementById('message');
+  const status = document.getElementById('formStatus');
+  const submitBtn = document.getElementById('submitBtn');
 
-async function loadLanternWall() {
-  if (!lanternSky) return;
-  const supabase = await getSupabase();
-  if (!supabase) {
-    lanternSky.innerHTML = '<p class="lantern-sky__empty">The lanterns are warming up — check back soon ✨</p>';
-    return;
+  const lampFlame = document.querySelector('#rsvpLamp .diya-flame');
+  const lampCaption = document.getElementById('rsvpLampCaption');
+  const captions = [
+    'Fill in the details below — your lantern is waiting to be lit 🪔',
+    'A little spark — keep going ✨',
+    'It’s starting to glow…',
+    'Almost bright enough to light the way!',
+    'Your lantern is ready to rise 🪔',
+  ];
+
+  function wireSelectSpecify(select, specifyInput) {
+    select?.addEventListener('change', () => {
+      const needsSpecify = select.value === 'more';
+      specifyInput.hidden = !needsSpecify;
+      if (!needsSpecify) specifyInput.value = '';
+      updateLamp();
+    });
+  }
+  wireSelectSpecify(guestCount, guestCountSpecify);
+  wireSelectSpecify(foodCount, foodCountSpecify);
+
+  attendingRadios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      const attending = form.querySelector('input[name="attending"]:checked')?.value;
+      attendingFields.hidden = attending !== 'yes';
+      vibrate(8);
+      updateLamp();
+    });
+  });
+
+  function requiredFields() {
+    return [nameInput, contactNumber, ...attendingRadios];
   }
 
-  const { data, error } = await supabase
-    .from('lantern_wall')
-    .select('id, guest_name, attending, created_at')
-    .order('created_at', { ascending: true })
-    .limit(500);
-
-  if (error) {
-    console.error('Could not load lantern wall:', error);
-    lanternSky.innerHTML = '<p class="lantern-sky__empty">The lanterns are warming up — check back soon ✨</p>';
-    return;
+  function completionRatio() {
+    const fields = requiredFields();
+    let filled = 0;
+    if (nameInput?.value.trim()) filled += 1;
+    if (contactNumber?.value.trim()) filled += 1;
+    if (form.querySelector('input[name="attending"]:checked')) filled += 1;
+    return filled / 3;
   }
 
-  if (!data || data.length === 0) {
-    lanternSky.innerHTML = '<p class="lantern-sky__empty">Be the first to light a lantern! 🪔</p>';
-    lanternCount.textContent = '0';
-    return;
+  function updateLamp() {
+    if (!lampFlame) return;
+    const ratio = completionRatio();
+    const scale = 0.3 + ratio * 0.7;
+    const opacity = 0.18 + ratio * 0.82;
+    lampFlame.style.transform = `scaleY(${scale.toFixed(2)})`;
+    lampFlame.style.opacity = opacity.toFixed(2);
+    if (ratio >= 1) {
+      lampFlame.style.animation = 'flame-flicker 1.8s ease-in-out infinite';
+    } else {
+      lampFlame.style.animation = 'none';
+    }
+    const idx = Math.min(captions.length - 1, Math.round(ratio * (captions.length - 1)));
+    if (lampCaption) lampCaption.textContent = captions[idx];
   }
 
-  data.forEach((row) => renderLantern(row, { animate: false }));
-}
+  [nameInput, contactNumber].forEach((input) => {
+    input?.addEventListener('input', updateLamp);
+  });
+  updateLamp();
 
-async function subscribeLanternWall() {
-  const supabase = await getSupabase();
-  if (!supabase) return;
+  function setStatus(text, kind) {
+    status.textContent = text;
+    status.classList.remove('is-error', 'is-success');
+    if (kind) status.classList.add(kind);
+  }
 
-  supabase
-    .channel('lantern-wall-changes')
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'lantern_wall' },
-      (payload) => renderLantern(payload.new, { animate: true })
-    )
-    .subscribe();
-}
+  function fireConfetti() {
+    if (prefersReducedMotion) return;
+    const colors = ['#d8a13a', '#c2415a', '#f0962f', '#0e6e6e', '#fffaf2'];
+    for (let i = 0; i < 28; i += 1) {
+      const piece = document.createElement('span');
+      const size = 6 + Math.random() * 8;
+      Object.assign(piece.style, {
+        position: 'fixed',
+        zIndex: '120',
+        left: `${50 + (Math.random() - 0.5) * 60}%`,
+        top: '38%',
+        width: `${size}px`,
+        height: `${size * 0.4}px`,
+        background: colors[i % colors.length],
+        borderRadius: '2px',
+        pointerEvents: 'none',
+        transform: `rotate(${Math.random() * 360}deg)`,
+        transition: 'transform 1.4s cubic-bezier(.2,.7,.2,1), top 1.4s cubic-bezier(.2,.7,.2,1), opacity 1.4s ease',
+        opacity: '1',
+      });
+      document.body.appendChild(piece);
+      requestAnimationFrame(() => {
+        piece.style.top = `${70 + Math.random() * 25}%`;
+        piece.style.transform = `translateX(${(Math.random() - 0.5) * 220}px) rotate(${Math.random() * 720}deg)`;
+        piece.style.opacity = '0';
+      });
+      setTimeout(() => piece.remove(), 1600);
+    }
+  }
 
-loadLanternWall().then(subscribeLanternWall);
+  function showSuccess(name, attending) {
+    const overlay = document.getElementById('successOverlay');
+    const successName = document.getElementById('successName');
+    const successMessage = document.getElementById('successMessage');
+    if (!overlay) return;
+    successName.textContent = name || 'friend';
+    successMessage.textContent = attending === 'yes'
+      ? 'Your lantern just rose into our wall of wishes — we cannot wait to celebrate with you!'
+      : 'Thank you for letting us know — you’ll be in our hearts on the big day.';
+    overlay.hidden = false;
+    fireConfetti();
+    vibrate([10, 50, 10, 50, 20]);
+    document.getElementById('successClose')?.addEventListener('click', () => { overlay.hidden = true; }, { once: true });
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = nameInput.value.trim();
+    const attending = form.querySelector('input[name="attending"]:checked')?.value;
+    const contact = contactNumber.value.trim();
+
+    if (!name || !attending || !contact) {
+      setStatus('Please fill in your name, attendance, and contact number.', 'is-error');
+      vibrate([20, 30, 20]);
+      return;
+    }
+
+    let guests = null;
+    let meals = null;
+    if (attending === 'yes') {
+      guests = guestCount.value === 'more' ? guestCountSpecify.value : guestCount.value;
+      meals = foodCount.value === 'more' ? foodCountSpecify.value : foodCount.value;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('is-loading');
+    setStatus('Lighting your lantern…');
+
+    const payload = {
+      guest_name: name,
+      attending: attending === 'yes',
+      guest_count: guests ? Number(guests) : null,
+      food_count: meals ? Number(meals) : null,
+      contact_number: contact,
+      message: message.value.trim() || null,
+    };
+
+    try {
+      const supabase = await getSupabase();
+      if (!supabase) throw new Error('offline');
+      const { error } = await supabase.from('rsvps').insert(payload);
+      if (error) throw error;
+      setStatus('Your RSVP has been received — thank you! 🪔', 'is-success');
+      showSuccess(name, attending);
+      form.reset();
+      attendingFields.hidden = true;
+      guestCountSpecify.hidden = true;
+      foodCountSpecify.hidden = true;
+      updateLamp();
+    } catch (err) {
+      console.error('RSVP submission failed:', err);
+      setStatus('Something went wrong sending your RSVP. Please try again in a moment, or reach out to us directly.', 'is-error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('is-loading');
+    }
+  });
+})();
+
+/* ============================================================
+   12. Lantern Wall — floating lanterns with gentle randomized
+       drift/sway "physics", a live count, realtime updates from
+       Supabase, and tap-to-reveal wish popovers.
+   ============================================================ */
+(function lanternWall() {
+  const field = document.getElementById('lanternField');
+  const countEl = document.getElementById('lanternCount');
+  const sky = document.getElementById('lanternSky');
+  const wish = document.getElementById('lanternWish');
+  const wishName = document.getElementById('lanternWishName');
+  const wishText = document.getElementById('lanternWishText');
+  const wishClose = document.getElementById('lanternWishClose');
+  if (!field || !countEl) return;
+
+  const lanternColors = ['#f0962f', '#c2415a', '#d8a13a', '#0e6e6e'];
+  const seen = new Set();
+  let total = 0;
+
+  function firstName(fullName) {
+    return (fullName || '').trim().split(/\s+/)[0] || 'A guest';
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function openWish(name, text) {
+    if (!wish) return;
+    wishName.textContent = `${firstName(name)}'s wish`;
+    wishText.textContent = text || 'is wishing the happy couple a lifetime of love and laughter 🪔';
+    wish.hidden = false;
+    requestAnimationFrame(() => wish.classList.add('is-open'));
+    vibrate(8);
+  }
+  function closeWish() {
+    wish?.classList.remove('is-open');
+    setTimeout(() => { if (wish) wish.hidden = true; }, 450);
+  }
+  wishClose?.addEventListener('click', closeWish);
+  wish?.addEventListener('click', (e) => { if (e.target === wish) closeWish(); });
+
+  function renderLantern(row) {
+    if (seen.has(row.id)) return;
+    seen.add(row.id);
+
+    const empty = field.querySelector('.lantern-field__empty');
+    if (empty) empty.remove();
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'lantern';
+    btn.setAttribute('aria-label', `Read ${firstName(row.guest_name)}’s lantern wish`);
+
+    const color = lanternColors[total % lanternColors.length];
+    const floatDur = 5 + Math.random() * 4;
+    const swayDur = 3.5 + Math.random() * 3;
+    const swayAmount = 10 + Math.random() * 18;
+    btn.style.setProperty('--lantern-color', color);
+    btn.style.setProperty('--lantern-glow', color + 'aa');
+    btn.style.setProperty('--float-dur', `${floatDur.toFixed(2)}s`);
+    btn.style.setProperty('--sway-dur', `${swayDur.toFixed(2)}s`);
+    btn.style.setProperty('--sway-amount', `${swayAmount.toFixed(0)}px`);
+    btn.style.setProperty('--float-delay', `-${(Math.random() * floatDur).toFixed(2)}s`);
+    btn.style.setProperty('--sway-delay', `-${(Math.random() * swayDur).toFixed(2)}s`);
+
+    btn.innerHTML = `
+      <span class="lantern__body"><span class="lantern__cap"></span><span class="lantern__base"></span></span>
+      <span class="lantern__name">${escapeHtml(firstName(row.guest_name))}</span>
+    `;
+    btn.addEventListener('click', () => openWish(row.guest_name, row.wish));
+
+    field.appendChild(btn);
+    total += 1;
+    countEl.textContent = String(total);
+  }
+
+  function scatterStars() {
+    if (!sky || prefersReducedMotion) return;
+    for (let i = 0; i < 40; i += 1) {
+      const star = document.createElement('span');
+      star.className = 'lantern-wall__star';
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 70}%`;
+      star.style.animationDuration = `${2 + Math.random() * 4}s`;
+      star.style.animationDelay = `-${Math.random() * 4}s`;
+      sky.appendChild(star);
+    }
+  }
+  scatterStars();
+
+  async function loadLanternWall() {
+    try {
+      const supabase = await getSupabase();
+      if (!supabase) return;
+      const { data, error } = await supabase
+        .from('lantern_wall')
+        .select('id, guest_name, wish, created_at')
+        .order('created_at', { ascending: true })
+        .limit(120);
+      if (error) throw error;
+      (data || []).forEach(renderLantern);
+    } catch (err) {
+      console.error('Could not load lantern wall:', err);
+    }
+  }
+
+  function subscribeLanternWall() {
+    getSupabase().then((supabase) => {
+      if (!supabase) return;
+      supabase
+        .channel('lantern_wall_inserts')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lantern_wall' }, (payload) => {
+          renderLantern(payload.new);
+        })
+        .subscribe();
+    });
+  }
+
+  loadLanternWall();
+  subscribeLanternWall();
+})();
+
+/* ============================================================
+   13. Share & footer back-to-top niceties.
+   ============================================================ */
+(function shareInvite() {
+  const link = document.querySelector('.footer__back');
+  link?.addEventListener('click', (event) => {
+    event.preventDefault();
+    document.getElementById('top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();

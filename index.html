@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dhwani &amp; Vraj — The Beginning of Forever</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#6e1423" />
+  <title>Dhwani &amp; Vraj — A Lifetime, Beginning Here</title>
   <script>document.documentElement.classList.add('js');</script>
-  <meta name="description" content="Join Dhwani &amp; Vraj as they begin their forever — RSVP for the wedding celebration on 19th July, 2026 at Royal India Banquets, Brampton." />
+  <meta name="description" content="Join Dhwani &amp; Vraj as their story unfolds — RSVP for the wedding celebration on 19th July 2026 at Royal India Banquets, Brampton, and light a lantern on their Wall of Wishes." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,313 +17,407 @@
 <body>
 
   <!-- ======================================================================
-       Reusable motif library — hand-drawn-style line art (paisley, peacock
-       feather, diya, lotus, marigold, jali lattice corner) referenced via
-       <use> throughout the page so the same elegant linework repeats
-       consistently as parallax ornaments, icons and borders.
+       Motif & icon library — reusable hand-drawn-style line art, referenced
+       throughout via <use> for parallax ornaments, animated card icons and
+       the illustrated "Our Story" vignettes.
        ====================================================================== -->
   <svg aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
     <defs>
-      <!-- Paisley / kairi -->
       <symbol id="motif-paisley" viewBox="0 0 100 150">
-        <path d="M52 12 C 86 14 96 58 74 88 C 60 108 36 112 44 134 C 18 122 6 84 24 54 C 38 31 30 16 52 12 Z" />
-        <circle cx="58" cy="44" r="4.5" />
-        <path d="M52 24 C 70 30 76 56 62 76" class="motif-vein" />
+        <path fill="currentColor" fill-opacity="0.55" d="M52 12 C 86 14 96 58 74 88 C 60 108 36 112 44 134 C 18 122 6 84 24 54 C 38 31 30 16 52 12 Z" />
+        <circle fill="currentColor" cx="58" cy="44" r="4.5" />
+        <path fill="none" stroke="currentColor" stroke-width="1" opacity="0.6" d="M52 24 C 70 30 76 56 62 76" />
       </symbol>
 
-      <!-- Peacock feather -->
       <symbol id="motif-feather" viewBox="0 0 70 190">
-        <path d="M35 186 L35 64" class="motif-stem" />
-        <ellipse cx="35" cy="46" rx="26" ry="38" />
-        <ellipse cx="35" cy="46" rx="15" ry="24" />
-        <circle cx="35" cy="46" r="6.5" />
-        <path d="M35 70 C 22 86 14 100 8 118 M35 78 C 24 96 18 110 14 128 M35 86 C 27 104 22 118 19 136" class="motif-vein" />
-        <path d="M35 70 C 48 86 56 100 62 118 M35 78 C 46 96 52 110 56 128 M35 86 C 43 104 48 118 51 136" class="motif-vein" />
+        <path fill="none" stroke="currentColor" stroke-width="1.4" d="M35 186 L35 64" />
+        <ellipse fill="currentColor" fill-opacity="0.5" cx="35" cy="46" rx="26" ry="38" />
+        <ellipse fill="currentColor" fill-opacity="0.75" cx="35" cy="46" rx="15" ry="24" />
+        <circle fill="currentColor" cx="35" cy="46" r="6.5" />
+        <path fill="none" stroke="currentColor" stroke-width="1" opacity="0.5" d="M35 70 C 22 86 14 100 8 118 M35 78 C 24 96 18 110 14 128 M35 86 C 27 104 22 118 19 136" />
+        <path fill="none" stroke="currentColor" stroke-width="1" opacity="0.5" d="M35 70 C 48 86 56 100 62 118 M35 78 C 46 96 52 110 56 128 M35 86 C 43 104 48 118 51 136" />
       </symbol>
 
-      <!-- Diya / oil lamp -->
-      <symbol id="motif-diya" viewBox="0 0 100 100">
-        <path d="M14 60 C 14 84 86 84 86 60 C 86 53 70 56 50 58 C 30 56 14 53 14 60 Z" />
-        <path d="M50 54 C 43 38 53 28 48 14 C 62 26 60 44 50 54 Z" class="motif-flame" />
-      </symbol>
-
-      <!-- Lotus -->
-      <symbol id="motif-lotus" viewBox="0 0 100 100">
-        <path d="M50 88 C 30 78 22 56 28 38 C 38 50 46 56 50 70 C 54 56 62 50 72 38 C 78 56 70 78 50 88 Z" />
-        <path d="M50 88 C 38 80 34 64 38 50 C 44 60 48 66 50 76 C 52 66 56 60 62 50 C 66 64 62 80 50 88 Z" class="motif-vein" />
-        <circle cx="50" cy="40" r="3.5" />
-      </symbol>
-
-      <!-- Marigold bloom -->
-      <symbol id="motif-marigold" viewBox="0 0 60 60">
-        <g class="motif-petals">
-          <circle cx="30" cy="14" r="9" />
-          <circle cx="46" cy="30" r="9" />
-          <circle cx="30" cy="46" r="9" />
-          <circle cx="14" cy="30" r="9" />
-          <circle cx="40.5" cy="19.5" r="9" />
-          <circle cx="40.5" cy="40.5" r="9" />
-          <circle cx="19.5" cy="40.5" r="9" />
-          <circle cx="19.5" cy="19.5" r="9" />
+      <symbol id="motif-marigold" viewBox="0 0 80 80">
+        <g fill="currentColor" fill-opacity="0.7">
+          <circle cx="40" cy="18" r="11" /><circle cx="62" cy="40" r="11" />
+          <circle cx="40" cy="62" r="11" /><circle cx="18" cy="40" r="11" />
+          <circle cx="55" cy="25" r="11" /><circle cx="55" cy="55" r="11" />
+          <circle cx="25" cy="55" r="11" /><circle cx="25" cy="25" r="11" />
         </g>
-        <circle cx="30" cy="30" r="8" class="motif-marigold-core" />
+        <circle class="marigold-core" fill="currentColor" cx="40" cy="40" r="10" />
       </symbol>
 
-      <!-- Jali lattice corner ornament -->
-      <symbol id="motif-jali" viewBox="0 0 120 120">
-        <path d="M4 4 H40 M4 4 V40" class="motif-frame" />
-        <circle cx="30" cy="30" r="11" />
-        <circle cx="60" cy="14" r="6" />
-        <circle cx="14" cy="60" r="6" />
-        <path d="M30 19 V41 M19 30 H41" class="motif-vein" />
-        <path d="M58 58 C 70 58 70 70 58 70 C 46 70 46 58 58 58 Z" />
+      <!-- Diya with a flickering flame, used as the recurring "light" icon -->
+      <symbol id="motif-diya" viewBox="0 0 120 96">
+        <ellipse class="diya-bowl" cx="60" cy="70" rx="46" ry="18" />
+        <ellipse class="diya-bowl-rim" cx="60" cy="63" rx="36" ry="11" />
+        <g class="diya-flame">
+          <path class="diya-flame__outer" d="M60 22 C 74 38 76 54 60 66 C 44 54 46 38 60 22 Z" />
+          <path class="diya-flame__inner" d="M60 40 C 68 48 68 58 60 64 C 52 58 52 48 60 40 Z" />
+        </g>
+      </symbol>
+
+      <!-- Mandap silhouette: four pillars + scalloped canopy roof -->
+      <symbol id="scene-mandap" viewBox="0 0 360 220">
+        <path fill="none" stroke="#6e1423" stroke-width="1.6" stroke-linecap="round" d="M40 210 L40 70 M140 210 L140 50 M220 210 L220 50 M320 210 L320 70" />
+        <path fill="none" stroke="#6e1423" stroke-width="1.6" stroke-linecap="round" d="M40 70 C 80 30 110 30 140 50 C 170 30 190 30 220 50 C 250 30 280 30 320 70" />
+        <path fill="none" stroke="#6e1423" stroke-width="1" stroke-linecap="round" opacity="0.5" d="M30 70 C 80 50 110 56 140 50 M140 50 C 170 44 190 44 220 50 M220 50 C 250 44 290 50 330 70" />
+      </symbol>
+
+      <!-- Garland: a draped string of marigolds between two points -->
+      <symbol id="scene-garland" viewBox="0 0 200 60">
+        <path fill="none" stroke="#d8a13a" stroke-width="2" stroke-linecap="round" d="M6 6 C 60 70 140 70 194 6" />
+        <g fill="#f0962f">
+          <circle cx="34" cy="32" r="5" /><circle cx="62" cy="50" r="5.5" />
+          <circle cx="100" cy="56" r="6" /><circle cx="138" cy="50" r="5.5" />
+          <circle cx="166" cy="32" r="5" />
+        </g>
+      </symbol>
+
+      <!-- Simple elegant silhouettes representing the couple -->
+      <symbol id="scene-figure-a" viewBox="0 0 80 160">
+        <path fill="#6e1423" d="M40 18 a14 14 0 1 0 0.01 0 Z" />
+        <path fill="#6e1423" d="M40 34 C 18 50 14 96 22 150 L34 150 L38 84 L42 84 L46 150 L58 150 C 66 96 62 50 40 34 Z" />
+        <path fill="none" stroke="#fbf3e7" stroke-width="1" opacity="0.55" d="M28 60 C 24 90 24 120 28 150 M52 60 C 56 90 56 120 52 150" />
+      </symbol>
+      <symbol id="scene-figure-b" viewBox="0 0 80 160">
+        <path fill="#c2415a" d="M40 18 a14 14 0 1 0 0.01 0 Z" />
+        <path fill="#c2415a" d="M40 34 C 60 44 68 70 64 100 C 76 112 78 134 70 150 L54 150 L50 110 L30 110 L26 150 L10 150 C 2 134 4 112 16 100 C 12 70 20 44 40 34 Z" />
+        <path fill="none" stroke="#fbf3e7" stroke-width="1" opacity="0.55" d="M40 50 L40 108" />
+      </symbol>
+
+      <!-- Rangoli "bloom" — a single concentric ring used to build the celebratory mandala -->
+      <symbol id="scene-rangoli-ring" viewBox="0 0 200 200">
+        <circle fill="none" stroke="#d8a13a" stroke-width="1.4" cx="100" cy="100" r="40" />
+        <circle fill="none" stroke="#d8a13a" stroke-width="1.4" cx="100" cy="100" r="74" />
+        <g fill="#c2415a">
+          <path d="M100 26 C 110 44 110 56 100 70 C 90 56 90 44 100 26 Z" />
+          <path d="M174 100 C 156 110 144 110 130 100 C 144 90 156 90 174 100 Z" />
+          <path d="M100 174 C 90 156 90 144 100 130 C 110 144 110 156 100 174 Z" />
+          <path d="M26 100 C 44 90 56 90 70 100 C 56 110 44 110 26 100 Z" />
+        </g>
       </symbol>
     </defs>
   </svg>
 
-  <!-- ============ SCROLL-LINKED BACKDROP ============
-       A fixed full-viewport gradient layer whose colours are interpolated
-       by JS as the visitor scrolls — taking the whole page on a single
-       visual journey from dawn light to a starlit night. -->
-  <div class="day-journey" id="dayJourney" aria-hidden="true">
-    <div class="day-journey__stars" id="journeyStars"></div>
-  </div>
-
-  <!-- Floating petals (decorative, parallax) -->
-  <div class="petal-field" id="petalField" aria-hidden="true"></div>
-
-  <!-- ============ OPENING SEQUENCE ============ -->
+  <!-- ======================================================================
+       Curtain — a brief opening flourish: marigold-strung panels part to
+       reveal the invitation, then settle out of the way for good.
+       ====================================================================== -->
   <div class="curtain" id="curtain" aria-hidden="true">
     <div class="curtain__panel curtain__panel--left">
-      <span class="curtain__garland"><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg></span>
+      <svg class="curtain__garland" viewBox="0 0 60 400" preserveAspectRatio="none"><use href="#scene-garland" transform="rotate(90 30 200) scale(2,0.3) translate(0,-330)"></use></svg>
     </div>
     <div class="curtain__panel curtain__panel--right">
-      <span class="curtain__garland"><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg></span>
+      <svg class="curtain__garland" viewBox="0 0 60 400" preserveAspectRatio="none"><use href="#scene-garland" transform="rotate(90 30 200) scale(2,0.3) translate(0,-330)"></use></svg>
     </div>
-    <p class="curtain__cue">drawing back the toran <span aria-hidden="true">✦</span> please wait</p>
+    <p class="curtain__cue">drawing back the curtain…</p>
   </div>
 
-  <!-- ============ HERO ============ -->
-  <header class="hero" id="top" data-scene="dawn">
-    <svg class="rangoli" id="rangoli" viewBox="0 0 600 600" aria-hidden="true"></svg>
+  <!-- Firecracker burst — fires the instant the curtain parts -->
+  <canvas id="fireworks" class="fireworks" aria-hidden="true"></canvas>
 
-    <p class="hero__eyebrow"><span class="ink-reveal" data-stagger="0">— You are joyfully invited to —</span></p>
+  <!-- Drifting petals & motifs — continuous ambient motion across the whole page -->
+  <div class="ambience" id="ambience" aria-hidden="true"></div>
 
-    <h1 class="hero__title">
-      <span class="hero__name ink-reveal" data-stagger="1">Dhwani</span>
-      <span class="hero__amp ink-reveal" data-stagger="2" aria-hidden="true">&amp;</span>
-      <span class="hero__name ink-reveal" data-stagger="3">Vraj</span>
+  <!-- ======================================================================
+       HERO
+       ====================================================================== -->
+  <header class="hero" id="top">
+    <svg class="hero__rangoli" id="rangoli" viewBox="0 0 600 600" aria-hidden="true"></svg>
+
+    <p class="hero__eyebrow ink-reveal" data-stagger="0">— you are joyfully invited to —</p>
+    <h1 class="hero__names">
+      <span class="ink-reveal" data-stagger="1">Dhwani</span>
+      <span class="hero__amp ink-reveal" data-stagger="2">&amp;</span>
+      <span class="ink-reveal" data-stagger="3">Vraj</span>
     </h1>
+    <p class="hero__tagline ink-reveal" data-stagger="4">
+      A lifetime of love is on its way — woven in marigold, lit in gold, and witnessed by everyone we hold dear. Come, be part of our story.
+    </p>
 
-    <p class="hero__tagline"><span class="ink-reveal" data-stagger="4">The Beginning of Forever <span aria-hidden="true">✦</span></span></p>
-
-    <p class="hero__line reveal">A lifetime of love is on its way — woven in marigold, lit in gold, and witnessed by everyone we hold dear. Come, be part of our story.</p>
-
-    <div class="hero__countdown reveal" id="countdown" aria-live="polite">
-      <div class="countdown__unit"><span class="countdown__num" id="cd-days">00</span><span class="countdown__label">Days</span></div>
-      <div class="countdown__unit"><span class="countdown__num" id="cd-hours">00</span><span class="countdown__label">Hours</span></div>
-      <div class="countdown__unit"><span class="countdown__num" id="cd-mins">00</span><span class="countdown__label">Minutes</span></div>
-      <div class="countdown__unit"><span class="countdown__num" id="cd-secs">00</span><span class="countdown__label">Seconds</span></div>
+    <div class="countdown ink-reveal" data-stagger="5" id="countdown" aria-label="Countdown to the wedding">
+      <div class="countdown__unit"><strong id="cd-days">00</strong><span>days</span></div>
+      <div class="countdown__unit"><strong id="cd-hours">00</strong><span>hours</span></div>
+      <div class="countdown__unit"><strong id="cd-mins">00</strong><span>minutes</span></div>
+      <div class="countdown__unit"><strong id="cd-secs">00</strong><span>seconds</span></div>
     </div>
 
-    <a href="#rsvp" class="hero__cta reveal">
-      <svg class="hero__cta-icon" aria-hidden="true"><use href="#motif-diya"/></svg>
-      <span>RSVP &amp; Light a Lantern</span>
+    <a href="#rsvp" class="btn btn--primary ink-reveal" data-stagger="6">
+      <svg class="btn__icon" viewBox="0 0 120 96" aria-hidden="true"><use href="#motif-diya"></use></svg>
+      RSVP &amp; Light a Lantern
     </a>
 
-    <div class="hero__scrollcue" aria-hidden="true">
-      <span></span>
-      <p>Begin the journey</p>
-    </div>
+    <button type="button" class="hero__scroll-cue" id="scrollCue" aria-label="Scroll to begin the story">
+      <span>begin the journey</span>
+      <span class="hero__scroll-cue-line" aria-hidden="true"></span>
+    </button>
   </header>
 
-  <!-- ============ THE INVITATION (story / narrative) ============ -->
-  <section class="story" id="story" data-scene="daylight">
-    <svg class="parallax-motif parallax-motif--feather" data-depth="0.18" aria-hidden="true"><use href="#motif-feather"/></svg>
-    <svg class="parallax-motif parallax-motif--paisley-l" data-depth="0.1" aria-hidden="true"><use href="#motif-paisley"/></svg>
+  <main>
+    <!-- ======================================================================
+         OUR STORY — an illustrated storybook that assembles, scene by scene,
+         as you scroll: a constellation forming, a mandap rising, a rangoli
+         blooming. Each vignette draws itself in alongside its chapter text.
+         ====================================================================== -->
+    <section class="story" id="story" aria-labelledby="story-heading">
+      <p class="kicker reveal">— Chapter One —</p>
+      <h2 id="story-heading" class="section-title reveal">A Lifetime, Beginning Here</h2>
 
-    <p class="section__eyebrow reveal">— Chapter One —</p>
-    <h2 class="section__title reveal">A Lifetime, Beginning Here</h2>
-
-    <blockquote class="story__quote reveal">
-      “Two souls, one journey — bound not just by tradition, but by a love
-      that grew quietly, then all at once. We invite you to witness the
-      moment our families become one.”
-    </blockquote>
-
-    <p class="story__line reveal">
-      Join us as we exchange vows beneath strings of marigold, to the
-      rhythm of the dhol, surrounded by the people who have shaped our
-      story — including, we hope, <em>you</em>.
-    </p>
-  </section>
-
-  <!-- ============ THE CELEBRATION (details) ============ -->
-  <section class="details" id="details" data-scene="daylight">
-    <p class="section__eyebrow reveal">— Chapter Two —</p>
-    <h2 class="section__title reveal">The Celebration Awaits</h2>
-    <p class="details__sub reveal">Every detail of our day, gathered here for you</p>
-
-    <div class="details__grid">
-      <article class="detail-card reveal" data-tilt>
-        <div class="detail-card__sheen" aria-hidden="true"></div>
-        <svg class="detail-card__icon" aria-hidden="true"><use href="#motif-diya"/></svg>
-        <h3>Date &amp; Time</h3>
-        <p>Sunday, 19<sup>th</sup> July 2026</p>
-        <p>5:00 PM onwards</p>
+      <article class="vignette" data-vignette="constellation">
+        <div class="vignette__art">
+          <svg viewBox="0 0 320 320" aria-hidden="true" class="vignette__svg vignette__svg--constellation">
+            <g class="constellation__lines">
+              <path d="M60 240 L120 140 L200 180 L260 80 L160 60 L60 240 Z" />
+            </g>
+            <g class="constellation__stars">
+              <circle cx="60" cy="240" r="5" /><circle cx="120" cy="140" r="5" />
+              <circle cx="200" cy="180" r="5" /><circle cx="260" cy="80" r="5" />
+              <circle cx="160" cy="60" r="5" />
+            </g>
+            <use href="#motif-paisley" class="vignette__motif vignette__motif--a" x="222" y="168" width="64" height="96" />
+          </svg>
+        </div>
+        <div class="vignette__text">
+          <h3 class="reveal">Two paths, quietly drawing closer</h3>
+          <p class="reveal">Long before they had a story to tell, theirs was already being written — in small coincidences, mutual friends, and quiet conversations that grew into something neither of them expected, but both of them now cannot imagine living without.</p>
+        </div>
       </article>
 
-      <article class="detail-card reveal" data-tilt>
-        <div class="detail-card__sheen" aria-hidden="true"></div>
-        <svg class="detail-card__icon" aria-hidden="true"><use href="#motif-lotus"/></svg>
-        <h3>Venue</h3>
-        <p>Royal India Banquets</p>
-        <p>31 Melanie Dr, Brampton, ON L6T 5H8</p>
-        <a class="detail-card__link" href="https://maps.google.com/?q=Royal+India+Banquets,+31+Melanie+Dr,+Brampton+ON+L6T+5H8" target="_blank" rel="noopener">View on map ↗</a>
+      <article class="vignette vignette--reverse" data-vignette="mandap">
+        <div class="vignette__art">
+          <svg viewBox="0 0 360 260" aria-hidden="true" class="vignette__svg vignette__svg--mandap">
+            <use href="#scene-mandap" class="mandap__structure" width="360" height="220" />
+            <use href="#scene-garland" class="mandap__garland mandap__garland--a" x="40" y="56" width="100" height="40" />
+            <use href="#scene-garland" class="mandap__garland mandap__garland--b" x="220" y="56" width="100" height="40" />
+            <use href="#scene-figure-a" class="mandap__figure mandap__figure--a" x="120" y="120" width="56" height="100" />
+            <use href="#scene-figure-b" class="mandap__figure mandap__figure--b" x="190" y="120" width="56" height="100" />
+          </svg>
+        </div>
+        <div class="vignette__text">
+          <h3 class="reveal">Two families, becoming one</h3>
+          <p class="reveal">Beneath strings of marigold and the rhythm of the dhol, our families come together — not just to witness a wedding, but to begin a friendship of their own. Every ritual, every shared laugh, every "remember when" still to come — it all starts here.</p>
+        </div>
       </article>
 
-      <article class="detail-card reveal" data-tilt>
-        <div class="detail-card__sheen" aria-hidden="true"></div>
-        <svg class="detail-card__icon" aria-hidden="true"><use href="#motif-feather"/></svg>
-        <h3>Kindly Respond</h3>
-        <p>We'd love to know you're coming!</p>
-        <p>Please RSVP by <strong>5th July 2026</strong></p>
-        <a class="detail-card__link" href="#rsvp">RSVP below ↓</a>
+      <article class="vignette" data-vignette="bloom">
+        <div class="vignette__art">
+          <svg viewBox="0 0 320 320" aria-hidden="true" class="vignette__svg vignette__svg--bloom">
+            <g class="bloom__rings">
+              <use href="#scene-rangoli-ring" class="bloom__ring bloom__ring--1" x="60" y="60" width="200" height="200" />
+              <use href="#scene-rangoli-ring" class="bloom__ring bloom__ring--2" x="20" y="20" width="280" height="280" />
+            </g>
+            <g class="bloom__diyas">
+              <use href="#motif-diya" x="36" y="148" width="48" height="38" />
+              <use href="#motif-diya" x="236" y="148" width="48" height="38" />
+              <use href="#motif-diya" x="136" y="14" width="48" height="38" />
+              <use href="#motif-diya" x="136" y="268" width="48" height="38" />
+            </g>
+          </svg>
+        </div>
+        <div class="vignette__text">
+          <h3 class="reveal">And now, the celebration begins</h3>
+          <p class="reveal">Join us as we exchange vows, share a feast, and dance long into the night — surrounded by the people who have shaped our story. Including, we hope, <em>you</em>.</p>
+        </div>
       </article>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============ RSVP FORM ============ -->
-  <section class="rsvp" id="rsvp" data-scene="golden">
-    <p class="section__eyebrow reveal">— Chapter Three —</p>
-    <h2 class="section__title reveal">Will You Write Yourself Into Our Story?</h2>
-    <p class="rsvp__sub reveal">Fill in the details below — your lantern is waiting to be lit 🪔</p>
+    <!-- ======================================================================
+         CELEBRATION DETAILS — ornate, animated, tap-to-reveal cards
+         ====================================================================== -->
+    <section class="details" id="details" aria-labelledby="details-heading">
+      <p class="kicker reveal">— Chapter Two —</p>
+      <h2 id="details-heading" class="section-title reveal">The Celebration Awaits</h2>
+      <p class="section-lead reveal">Tap a card to uncover a little more — and a way to carry it with you.</p>
 
-    <div class="rsvp-card reveal">
-      <svg class="rsvp-card__corner rsvp-card__corner--tl" aria-hidden="true"><use href="#motif-jali"/></svg>
-      <svg class="rsvp-card__corner rsvp-card__corner--br" aria-hidden="true"><use href="#motif-jali"/></svg>
+      <div class="flip-grid">
+        <button type="button" class="flip-card reveal" data-flip aria-expanded="false">
+          <span class="flip-card__inner">
+            <span class="flip-card__face flip-card__face--front">
+              <svg class="flip-card__icon" viewBox="0 0 120 96" aria-hidden="true"><use href="#motif-diya"></use></svg>
+              <strong>Date &amp; Time</strong>
+              <span>Sunday, 19<sup>th</sup> July 2026<br />5:00 PM onwards</span>
+              <em class="flip-card__hint">tap to add to your calendar ↻</em>
+            </span>
+            <span class="flip-card__face flip-card__face--back">
+              <strong>Save it for keeps</strong>
+              <span>Add the whole celebration straight to your phone's calendar — we'll see you there.</span>
+              <span class="btn btn--ghost" id="addToCalendarBtn">＋ Add to calendar</span>
+            </span>
+          </span>
+        </button>
 
-      <form class="rsvp-form" id="rsvpForm" novalidate>
+        <button type="button" class="flip-card reveal" data-flip aria-expanded="false">
+          <span class="flip-card__inner">
+            <span class="flip-card__face flip-card__face--front">
+              <svg class="flip-card__icon flip-card__icon--pin" viewBox="0 0 80 100" aria-hidden="true">
+                <path d="M40 6 C 18 6 6 24 6 44 C 6 74 40 96 40 96 C 40 96 74 74 74 44 C 74 24 62 6 40 6 Z" />
+                <circle cx="40" cy="44" r="14" class="pin__core" />
+              </svg>
+              <strong>Venue</strong>
+              <span>Royal India Banquets<br />31 Melanie Dr, Brampton, ON L6T 5H8</span>
+              <em class="flip-card__hint">tap for directions ↻</em>
+            </span>
+            <span class="flip-card__face flip-card__face--back">
+              <strong>Let's get you there</strong>
+              <span>One tap and your maps app will take it from here — doors open at 5:00 PM.</span>
+              <span class="btn btn--ghost" id="directionsBtn">Get directions ↗</span>
+            </span>
+          </span>
+        </button>
 
-        <!-- Name -->
-        <div class="field">
-          <label for="guestName">Your Name <span class="req">*</span></label>
-          <input type="text" id="guestName" name="guestName" required autocomplete="name" placeholder="e.g. Aarav Patel" />
+        <button type="button" class="flip-card reveal" data-flip aria-expanded="false">
+          <span class="flip-card__inner">
+            <span class="flip-card__face flip-card__face--front">
+              <svg class="flip-card__icon flip-card__icon--bell" viewBox="0 0 90 100" aria-hidden="true">
+                <path class="bell__body" d="M45 14 C 28 14 22 30 22 46 C 22 64 14 72 14 76 L76 76 C 76 72 68 64 68 46 C 68 30 62 14 45 14 Z" />
+                <circle class="bell__top" cx="45" cy="12" r="6" />
+                <path class="bell__clapper" d="M45 76 L45 88" />
+              </svg>
+              <strong>Kindly Respond</strong>
+              <span>We'd love to know you're coming!<br />Please RSVP by <b>5th July 2026</b></span>
+              <em class="flip-card__hint">tap to jump to the form ↻</em>
+            </span>
+            <span class="flip-card__face flip-card__face--back">
+              <strong>Your seat is waiting</strong>
+              <span>It only takes a moment — and it lights a lantern on our wall the instant you do.</span>
+              <span class="btn btn--ghost" data-jump="#rsvp">RSVP below ↓</span>
+            </span>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         RSVP — the form, with a diya that brightens as you complete it
+         ====================================================================== -->
+    <section class="rsvp" id="rsvp" aria-labelledby="rsvp-heading">
+      <p class="kicker reveal">— Chapter Three —</p>
+      <h2 id="rsvp-heading" class="section-title reveal">Will You Write Yourself Into Our Story?</h2>
+
+      <div class="rsvp__layout">
+        <div class="rsvp__lamp reveal" aria-hidden="true">
+          <svg viewBox="0 0 120 96" class="rsvp__lamp-svg" id="rsvpLamp">
+            <ellipse class="diya-bowl" cx="60" cy="70" rx="46" ry="18" />
+            <ellipse class="diya-bowl-rim" cx="60" cy="63" rx="36" ry="11" />
+            <g class="diya-flame">
+              <path class="diya-flame__outer" d="M60 22 C 74 38 76 54 60 66 C 44 54 46 38 60 22 Z" />
+              <path class="diya-flame__inner" d="M60 40 C 68 48 68 58 60 64 C 52 58 52 48 60 40 Z" />
+            </g>
+          </svg>
+          <p class="rsvp__lamp-caption" id="rsvpLampCaption">Fill in the details below — your lantern is waiting to be lit 🪔</p>
         </div>
 
-        <!-- Attendance -->
-        <fieldset class="field">
-          <legend>Will you be able to attend our wedding? <span class="req">*</span></legend>
-          <p class="field__hint">19th July, 5:00 PM onwards, Royal India Banquets, Brampton</p>
-          <div class="radio-group">
-            <label class="radio-pill">
+        <form id="rsvpForm" class="form reveal" novalidate>
+          <label class="field">
+            <span class="field__label">Your Name <span class="req">*</span></span>
+            <input type="text" id="guestName" name="guestName" required autocomplete="name" placeholder="e.g. Aarav Patel" />
+          </label>
+
+          <fieldset class="field field--choice">
+            <legend class="field__label">Will you be able to attend? <span class="req">*</span></legend>
+            <p class="field__note">19th July, 5:00 PM onwards, Royal India Banquets, Brampton</p>
+            <label class="choice-pill">
               <input type="radio" name="attending" value="yes" required />
-              <span>Yes, I will be there 😊</span>
+              <span>Yes, I'll be there 😊</span>
             </label>
-            <label class="radio-pill">
+            <label class="choice-pill">
               <input type="radio" name="attending" value="no" required />
               <span>Sorry, I won't be able to attend 😔</span>
             </label>
+          </fieldset>
+
+          <div id="attendingFields" hidden>
+            <label class="field">
+              <span class="field__label">How many guests, including you?</span>
+              <select id="guestCount" name="guestCount">
+                <option value="">Select…</option>
+                <option value="1">Just me</option>
+                <option value="2">2 guests</option>
+                <option value="3">3 guests</option>
+                <option value="4">4 guests</option>
+                <option value="more">More than 4</option>
+              </select>
+            </label>
+            <input type="number" inputmode="numeric" min="1" id="guestCountSpecify" class="field__specify" placeholder="How many in total?" hidden />
+
+            <label class="field">
+              <span class="field__label">How many will need a Swaminarayan-style meal?</span>
+              <select id="foodCount" name="foodCount">
+                <option value="">Select…</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="more">More than 4</option>
+              </select>
+            </label>
+            <input type="number" inputmode="numeric" min="1" id="foodCountSpecify" class="field__specify" placeholder="How many meals?" hidden />
           </div>
-        </fieldset>
 
-        <!-- Conditional block: only meaningful if attending -->
-        <div id="attendingFields" class="attending-fields" hidden>
+          <label class="field">
+            <span class="field__label">Contact Number <span class="req">*</span></span>
+            <input type="tel" id="contactNumber" name="contactNumber" required autocomplete="tel" inputmode="tel" placeholder="e.g. +1 416 555 0123" />
+          </label>
 
-          <!-- Guest count -->
-          <div class="field">
-            <label for="guestCount">Number of guests attending (including yourself) <span class="req">*</span></label>
-            <select id="guestCount" name="guestCount">
-              <option value="" disabled selected>Select a number</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="more">More than 7</option>
-            </select>
-            <input type="text" id="guestCountSpecify" class="specify-input" hidden placeholder="Please specify how many guests" />
-          </div>
+          <label class="field">
+            <span class="field__label">A note for the newlyweds <em>(and a song request!)</em></span>
+            <textarea id="message" name="message" rows="3" placeholder="Share your wishes, blessings, or the song that'll get you on the dance floor…"></textarea>
+          </label>
 
-          <!-- Food preference -->
-          <div class="field">
-            <label for="foodCount">How many attendees prefer Swaminarayan food (without onion and garlic)? <span class="req">*</span></label>
-            <select id="foodCount" name="foodCount">
-              <option value="" disabled selected>Select a number</option>
-              <option value="0">None</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="more">More than 7</option>
-            </select>
-            <input type="text" id="foodCountSpecify" class="specify-input" hidden placeholder="Please specify how many" />
-          </div>
-        </div>
+          <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
 
-        <!-- Contact -->
-        <div class="field">
-          <label for="contactNumber">Contact Number <span class="req">*</span></label>
-          <input type="tel" id="contactNumber" name="contactNumber" required autocomplete="tel" placeholder="e.g. +1 416 555 0123" />
-        </div>
+          <button type="submit" class="btn btn--primary btn--block" id="submitBtn">
+            <span class="btn__label">Light My Lantern &amp; RSVP</span>
+          </button>
+        </form>
+      </div>
+    </section>
 
-        <!-- Message -->
-        <div class="field">
-          <label for="message">A note for the newlyweds 👰‍♀️💖🤵‍♂️ (and a song request!)</label>
-          <textarea id="message" name="message" rows="4" placeholder="Share your wishes, blessings, or the song that'll get you on the dance floor..."></textarea>
-        </div>
+    <!-- ======================================================================
+         LANTERN WALL — lanterns drift skyward with gentle physics; tap one
+         to read the little wish that came with it.
+         ====================================================================== -->
+    <section class="lantern-wall" id="lanterns" aria-labelledby="lantern-heading">
+      <div class="lantern-wall__sky" id="lanternSky" aria-hidden="true">
+        <div class="lantern-wall__moon"></div>
+      </div>
+      <p class="kicker kicker--light reveal">— Final Chapter (so far) —</p>
+      <h2 id="lantern-heading" class="section-title section-title--light reveal">Lanterns Already Lit, Waiting for Yours</h2>
+      <p class="section-lead section-lead--light reveal">
+        Every time someone RSVPs, a new lantern rises into our night sky. Here's everyone who has already said "we'll be there" — tap a lantern to read their wish, and watch for yours to join them 🪔
+      </p>
+      <p class="lantern-wall__count reveal"><strong id="lanternCount">0</strong> lanterns lit so far</p>
+      <div class="lantern-field" id="lanternField" aria-live="polite">
+        <p class="lantern-field__empty">Be the first to light a lantern! 🪔</p>
+      </div>
+    </section>
+  </main>
 
-        <button type="submit" class="rsvp-form__submit" id="submitBtn">
-          <span class="btn-label">Light My Lantern &amp; RSVP</span>
-          <span class="btn-spinner" aria-hidden="true"></span>
-        </button>
+  <footer class="footer">
+    <svg class="footer__motif" viewBox="0 0 80 80" aria-hidden="true"><use href="#motif-marigold"></use></svg>
+    <p class="footer__names">Dhwani <span class="hero__amp">&amp;</span> Vraj</p>
+    <p class="footer__line">With love and gratitude, we look forward to writing the next chapter — with you in it.</p>
+    <a href="#top" class="footer__back">back to the beginning ↑</a>
+  </footer>
 
-        <p class="rsvp-form__status" id="formStatus" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </section>
-
-  <!-- ============ LANTERN WALL ============ -->
-  <section class="lantern-wall" id="lanterns" data-scene="night">
-    <div class="lantern-wall__moon" aria-hidden="true"></div>
-    <svg class="parallax-motif parallax-motif--paisley-r" data-depth="0.12" aria-hidden="true"><use href="#motif-paisley"/></svg>
-
-    <p class="section__eyebrow reveal section__eyebrow--light">— Final Chapter (so far) —</p>
-    <h2 class="section__title reveal section__title--light">Lanterns Already Lit, Waiting for Yours</h2>
-    <p class="lantern-wall__sub reveal">Every time someone RSVPs, a new lantern rises into our night sky. Here's everyone who has already said "we'll be there" — watch for yours to join them 🪔</p>
-
-    <div class="lantern-wall__counter reveal">
-      <span id="lanternCount">0</span>
-      <span class="lantern-wall__counter-label">lanterns lit so far</span>
-    </div>
-
-    <div class="lantern-sky" id="lanternSky" aria-live="polite"></div>
-  </section>
-
-  <!-- ============ SUCCESS OVERLAY ============ -->
-  <div class="success-overlay" id="successOverlay" hidden>
-    <div class="success-card">
-      <svg class="success-card__lantern" aria-hidden="true"><use href="#motif-diya"/></svg>
-      <h3>Thank you, <span id="successName">friend</span>!</h3>
-      <p id="successMessage">Your lantern now glows on our Wall of Wishes. We can't wait to celebrate with you!</p>
-      <button class="success-card__close" id="successClose">Close</button>
-    </div>
+  <!-- Lantern wish popover -->
+  <div class="lantern-wish" id="lanternWish" hidden>
+    <p class="lantern-wish__name" id="lanternWishName"></p>
+    <p class="lantern-wish__text" id="lanternWishText"></p>
+    <button type="button" class="lantern-wish__close" id="lanternWishClose" aria-label="Close">×</button>
   </div>
 
-  <!-- ============ FOOTER ============ -->
-  <footer class="site-footer" data-scene="night">
-    <span class="site-footer__garland" aria-hidden="true">
-      <svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg><svg><use href="#motif-marigold"/></svg>
-    </span>
-    <p class="site-footer__names">Dhwani <span aria-hidden="true">&amp;</span> Vraj</p>
-    <p class="site-footer__note">With love and gratitude, we look forward to writing the next chapter — with you in it.</p>
-    <a href="#top" class="site-footer__top">Back to the beginning ↑</a>
-  </footer>
+  <!-- Success overlay shown after a successful RSVP -->
+  <div id="successOverlay" class="success-overlay" hidden>
+    <div class="success-card">
+      <span class="success-card__icon" aria-hidden="true">🪔</span>
+      <h3>Thank you, <span id="successName">friend</span>!</h3>
+      <p id="successMessage"></p>
+      <button type="button" class="btn btn--primary" id="successClose">Close</button>
+    </div>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>
