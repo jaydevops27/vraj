@@ -1017,6 +1017,20 @@ html.js .reveal.is-visible { opacity: 1; transform: translateY(0); }
   transition: color 0.3s ease, border-color 0.3s ease;
 }
 .footer__back:hover { color: var(--gold-soft); border-color: var(--gold-soft); }
+.footer__credit {
+  margin-top: 2.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--paper) 45%, transparent);
+}
+.footer__credit a {
+  color: color-mix(in srgb, var(--gold) 80%, var(--paper) 20%);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.footer__credit a:hover { color: var(--gold-soft); border-color: var(--gold-soft); }
 
 /* =====================================================================
    Success overlay
