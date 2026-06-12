@@ -125,7 +125,7 @@ function renderStats(rows) {
   const attending = rows.filter((r) => r.attending);
   const declined = rows.filter((r) => !r.attending);
   const totalGuests = attending.reduce((sum, r) => sum + (r.guest_count || 0), 0);
-  const totalSwaminarayan = attending.reduce((sum, r) => sum + (r.food_preference_count || 0), 0);
+  const totalSwaminarayan = attending.reduce((sum, r) => sum + (r.food_count || 0), 0);
 
   const cards = [
     { label: 'Total responses', value: rows.length },
@@ -155,8 +155,8 @@ function renderTable(rows) {
       const attendingPill = r.attending
         ? '<span class="pill pill--yes">Yes 😊</span>'
         : '<span class="pill pill--no">No 😔</span>';
-      const guests = r.attending ? formatCount(r.guest_count, r.guest_count_note) : '—';
-      const food = r.attending ? formatCount(r.food_preference_count, r.food_preference_note) : '—';
+      const guests = r.attending ? formatCount(r.guest_count) : '—';
+      const food = r.attending ? formatCount(r.food_count) : '—';
 
       return `
         <tr>
@@ -173,9 +173,8 @@ function renderTable(rows) {
     .join('');
 }
 
-function formatCount(count, note) {
+function formatCount(count) {
   if (count === null || count === undefined) return '—';
-  if (note) return `${count} (${note})`;
   return String(count);
 }
 
@@ -189,8 +188,8 @@ exportBtn.addEventListener('click', () => {
   if (currentRows.length === 0) return;
 
   const headers = [
-    'Submitted', 'Name', 'Attending', 'Guest Count', 'Guest Count Note',
-    'Swaminarayan Meals', 'Swaminarayan Note', 'Contact Number', 'Message',
+    'Submitted', 'Name', 'Attending', 'Guest Count',
+    'Swaminarayan Meals', 'Contact Number', 'Message',
   ];
   const lines = [headers.join(',')];
 
@@ -200,9 +199,7 @@ exportBtn.addEventListener('click', () => {
       r.guest_name,
       r.attending ? 'Yes' : 'No',
       r.guest_count ?? '',
-      r.guest_count_note ?? '',
-      r.food_preference_count ?? '',
-      r.food_preference_note ?? '',
+      r.food_count ?? '',
       r.contact_number,
       r.message ?? '',
     ].map(csvEscape);

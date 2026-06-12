@@ -24,16 +24,14 @@
 -- 1. Full RSVP responses (private)
 -- ---------------------------------------------------------------------------
 create table if not exists public.rsvps (
-  id                     uuid primary key default gen_random_uuid(),
-  created_at             timestamptz not null default now(),
-  guest_name             text not null,
-  attending              boolean not null,
-  contact_number         text not null,
-  guest_count            integer,
-  guest_count_note       text,
-  food_preference_count  integer,
-  food_preference_note   text,
-  message                text
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  guest_name    text not null,
+  attending     boolean not null,
+  contact_number text not null,
+  guest_count   integer,
+  food_count    integer,
+  message       text
 );
 
 alter table public.rsvps enable row level security;
@@ -42,7 +40,7 @@ alter table public.rsvps enable row level security;
 create policy "Public can submit an RSVP"
   on public.rsvps
   for insert
-  to anon
+  to anon, authenticated
   with check (true);
 
 -- ...but nobody using the anon key can read, edit or delete RSVPs.
@@ -62,7 +60,8 @@ create table if not exists public.lantern_wall (
   id          uuid primary key,
   created_at  timestamptz not null default now(),
   guest_name  text not null,
-  attending   boolean not null
+  attending   boolean not null,
+  wish        text
 );
 
 alter table public.lantern_wall enable row level security;
@@ -88,8 +87,8 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.lantern_wall (id, created_at, guest_name, attending)
-  values (new.id, new.created_at, new.guest_name, new.attending);
+  insert into public.lantern_wall (id, created_at, guest_name, attending, wish)
+  values (new.id, new.created_at, new.guest_name, new.attending, new.message);
   return new;
 end;
 $$;
